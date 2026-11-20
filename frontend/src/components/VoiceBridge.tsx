@@ -10,7 +10,7 @@
 import { useEffect, useRef } from "react";
 import { useConversation } from "@elevenlabs/react";
 import { ApiError, backend, formatPct, hasSession, LoginCancelled, midOf, onLogin, type Purchase } from "../backend";
-import { applyPurchase, emit, getCatalog } from "../realApi";
+import { applyPurchase, askFromVoice, emit, getCatalog } from "../realApi";
 import { voice } from "../voice";
 
 const RECHECK_MS = 120_000;
@@ -38,6 +38,9 @@ async function tool(run: () => Promise<unknown>): Promise<string> {
 const str = (v: unknown) => (typeof v === "string" ? v : v === undefined || v === null ? "" : String(v));
 
 const clientTools = {
+  // The main tool: pass the person's request to the Allowance assistant (Claude on the backend) and
+  // speak its answer. Purchases happen only there, behind the backend's purchase gate.
+  ask_allowance: (params: Record<string, unknown>) => askFromVoice(str(params.request)),
   search_markets: (params: Record<string, unknown>) =>
     tool(async () =>
       (await backend.searchMarkets(str(params.query))).slice(0, 5).map((e) => ({

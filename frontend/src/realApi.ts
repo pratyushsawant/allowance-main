@@ -214,6 +214,25 @@ function errorReply(err: unknown): AgentReply {
   return { text: "I couldn't reach the Allowance backend. If a purchase had already gone through, it appears under Payments.", status: "error" };
 }
 
+/**
+ * The ElevenLabs voice agent's single tool: the person's spoken request goes to the same server-side
+ * Claude conversation as the chat panel, so spoken purchases pass the same purchase gate, policy and
+ * approvals as typed ones. Returns the text for the voice agent to say.
+ */
+export async function askFromVoice(text: string): Promise<string> {
+  const request = text.trim();
+  if (!request) return "I didn't catch that. Could you say it again?";
+  try {
+    const r = await backend.chat(conversationId, crypto.randomUUID(), request);
+    remember(r);
+    return r.reply;
+  } catch (err) {
+    return errorReply(err).text;
+  } finally {
+    refreshNow();
+  }
+}
+
 /** A held purchase from this conversation was decided: let the assistant explain the outcome (it can't buy on this). */
 async function reportOutcome(purchaseId: string) {
   if (!conversationPurchases.has(purchaseId) || reported.has(purchaseId)) return;
