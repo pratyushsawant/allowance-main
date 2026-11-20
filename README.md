@@ -29,9 +29,13 @@ Open [the live demo](https://allowance-ubc-2026.netlify.app/#/demo) and enter th
 (It starts with a hyphen.)
 
 - **What it allows:** an *agent* session. You can chat with the assistant, and when you ask for fresh data it may buy small items with **testnet** USDC, inside the rules below. Items up to 0.25 USDC buy automatically.
-- **What it doesn't allow:**
-  - anything over 0.25 USDC (the deep brief) waits for a person;
-  - approving, declining, freezing or unfreezing needs the separate **operator code**. The team keeps that one private and demos approvals in person.
+- **What it doesn't allow:** anything over 0.25 USDC (the deep brief) waits for a person. Approving, declining, freezing and unfreezing need the separate **operator code**:
+
+  ```text
+  ZT-HyhRA1Kb4
+  ```
+
+  The app asks for it only when you press Approve, Don't buy, Freeze or Unfreeze; the AI agent never sees it. Approve the 0.75 deep brief at most once, because the demo wallet holds limited testnet USDC.
 - **Shared budget:** the daily cap (3.00 USDC) is shared by everyone using this code, and the team may rotate the code after judging.
 - **Spending may be frozen when you visit.** The red banner says so. The assistant still chats, searches markets and explains past results, but every purchase is refused and nothing is charged until an operator unfreezes it.
 
