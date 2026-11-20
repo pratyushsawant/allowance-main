@@ -57,7 +57,11 @@ All bodies are JSON. Amounts arrive in two forms: `amount`-style fields are **st
 | `GET /health` | none | Liveness: `{"ok":true}` | [health.json](api-examples/health.json) |
 | `POST /api/sessions` | none | Exchange an access code for a session token | [sessions.json](api-examples/sessions.json) |
 | `POST /api/voice/session` `{transport?: "webrtc"\|"websocket"}` | agent | ElevenLabs credentials for `startSession` | [ok](api-examples/voice-session-ok.example.json) (UNVERIFIED) · [503 now](api-examples/voice-session-not-configured.json) |
-| `GET /api/catalog` | agent | Items, prices, sellers | [catalog.json](api-examples/catalog.json) |
+| `GET /api/catalog` | agent | Items, prices, sellers. Since deploy `98a707e2` each item also has `sellerAllowlisted` (boolean), for display only: the backend still checks the payee of every actual quote. | [catalog.json](api-examples/catalog.json) |
+| `GET /api/assistant` | agent | `{configured, model, problem}` for the chat assistant | — |
+| `POST /api/chat` `{conversationId, messageId, text}` | agent | One chat message to the server-side Claude assistant → `{reply, status: ok\|approval_required\|refused\|incomplete, purchases[], at}`. Make a new `messageId` (UUID) per message; resending the same id returns the stored answer and never runs it, or any purchase in it, again. Errors: 503 `assistant_not_configured`/`assistant_unavailable`, 502 `assistant_*`, 409 `conversation_busy`, 429 `too_many_messages`; error bodies carry `purchases` made before the failure. | — |
+| `POST /api/chat/event` `{conversationId, messageId, purchaseId}` | agent | After an approval or decline of a purchase from this conversation: the assistant explains the outcome. Never buys. | — |
+| `GET /api/chat/:conversationId` | agent | What the person saw (messages and replies), to restore the chat after a refresh | — |
 | `GET /api/markets/search?q=` (2–80 chars) | agent | Free search over recorded events with latest prices (up to 8) | [markets-search.json](api-examples/markets-search.json) |
 | `POST /api/purchases` `{item, ticker, idempotencyKey}` | agent | Request a purchase. Returns the purchase view (section 4). | [awaiting](api-examples/purchase-awaiting_approval-deep_brief.json) · [blocked](api-examples/purchase-blocked-full_report.json) |
 | `GET /api/purchases?limit=20` | agent | Recent purchases, newest first (max 100). This is the ledger. | [purchases-list.json](api-examples/purchases-list.json) |

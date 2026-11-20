@@ -6,11 +6,12 @@
  * An agent credential (static or session) can never approve, decline or unfreeze.
  * See docs/VOICE_INTEGRATION.md for how the frontend uses these.
  */
+import { AssistantError, type Assistant } from "./assistant.ts";
 import type { Auth } from "./auth.ts";
 import { constantTimeEqual, createFailureLimiter } from "./auth.ts";
 import type { Buyer } from "./buyer.ts";
 import { QuoteError } from "./buyer.ts";
-import { CATALOG, getItem, SELLERS, TICKER_PATTERN } from "./catalog.ts";
+import { CATALOG, getItem, SELLERS, TICKER_PATTERN, type SellerId } from "./catalog.ts";
 import { HttpError, readJson, sendJson, type Router } from "./http.ts";
 import { LedgerError, type Ledger, type Purchase } from "./ledger.ts";
 import type { MarketData } from "./market-data.ts";
@@ -33,6 +34,10 @@ export interface ApiDeps {
   sessionTtlSeconds: Record<Scope, number>;
   voice: VoiceSessions;
   gatewayAvailable: () => Promise<bigint>;
+  /** Payee address per seller, to tell the UI which sellers are on the allowlist (display only). */
+  sellerAddresses?: Partial<Record<SellerId, string>>;
+  /** Server-side Claude assistant (POST /api/chat). Absent in tests that don't need it. */
+  assistant?: Assistant;
 }
 
 const IDEMPOTENCY_KEY = /^[A-Za-z0-9._:-]{8,128}$/;
@@ -98,6 +103,49 @@ export function registerApi(router: Router, deps: ApiDeps): void {
     sendJson(res, 200, deps.sessions.issue(scope, deps.sessionTtlSeconds[scope]));
   });
 
+  // ----- Assistant (agent scope: it can ask to buy, never approve) -----
+  const assistantCall = async (res: Parameters<typeof sendJson>[0], fn: () => Promise<unknown> | unknown) => {
+    if (!deps.assistant) {
+      return sendJson(res, 503, { error: "assistant_not_configured", message: "The AI assistant isn't available on this server. Nothing was bought.", purchases: [] });
+    }
+    try {
+      sendJson(res, 200, await fn());
+    } catch (err) {
+      if (err instanceof AssistantError) return sendJson(res, err.status, { error: err.code, message: err.message, purchases: err.purchases });
+      throw err;
+    }
+  };
+
+  router.add("GET", "/api/assistant", ({ req, res }) => {
+    auth.require(req, "agent");
+    sendJson(res, 200, deps.assistant?.status() ?? { configured: false, model: null, problem: null });
+  });
+
+  router.add("POST", "/api/chat", async ({ req, res }) => {
+    auth.require(req, "agent");
+    const body = await readJson(req);
+    await assistantCall(res, () =>
+      deps.assistant!.chat({ conversationId: String(body.conversationId ?? ""), messageId: String(body.messageId ?? ""), text: String(body.text ?? "") }),
+    );
+  });
+
+  router.add("POST", "/api/chat/event", async ({ req, res }) => {
+    auth.require(req, "agent");
+    const body = await readJson(req);
+    await assistantCall(res, () =>
+      deps.assistant!.purchaseUpdate({
+        conversationId: String(body.conversationId ?? ""),
+        messageId: String(body.messageId ?? ""),
+        purchaseId: String(body.purchaseId ?? ""),
+      }),
+    );
+  });
+
+  router.add("GET", "/api/chat/:id", async ({ req, res, params }) => {
+    auth.require(req, "agent");
+    await assistantCall(res, () => ({ conversationId: params.id, messages: deps.assistant!.transcript(params.id) }));
+  });
+
   router.add("POST", "/api/voice/session", async ({ req, res }) => {
     auth.require(req, "agent");
     const body = await readJson(req);
@@ -113,12 +161,19 @@ export function registerApi(router: Router, deps: ApiDeps): void {
     }
   });
 
+  // `sellerAllowlisted` is for display. Every purchase is still checked against the payee in the
+  // seller's actual 402 offer, never against this listing.
+  const allowlisted = (sellerId: SellerId): boolean | undefined => {
+    const address = deps.sellerAddresses?.[sellerId];
+    return address === undefined ? undefined : deps.policy.allowedPayees.some((p) => p.toLowerCase() === address.toLowerCase());
+  };
+
   router.add("GET", "/api/catalog", ({ req, res }) => {
     auth.require(req, "agent");
     sendJson(res, 200, {
       items: CATALOG.map((i) => ({
         id: i.id, title: i.title, description: i.description, priceUsdc: i.priceUsdc,
-        seller: i.sellerId, sellerName: SELLERS[i.sellerId].name,
+        seller: i.sellerId, sellerName: SELLERS[i.sellerId].name, sellerAllowlisted: allowlisted(i.sellerId),
       })),
     });
   });

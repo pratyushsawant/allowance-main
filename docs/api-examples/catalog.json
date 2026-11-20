@@ -1,9 +1,9 @@
 {
   "_provenance": {
-    "capturedAt": "2026-11-20T13:12:27.987Z",
+    "capturedAt": "2026-11-20T14:02:44.609Z",
     "source": "live",
     "service": "https://allowance-backend-production.up.railway.app",
-    "note": "Captured from the deployed service. The capture used a backend credential; a frontend sends its agent SESSION token in the same header and gets the same response. Re-captured after deploy 315e6c55 (percent format and catalog text)."
+    "note": "Captured from the deployed service. The capture used a backend credential; a frontend sends its agent SESSION token in the same header and gets the same response. Re-captured after deploy 98a707e2 (adds sellerAllowlisted, display only)."
   },
   "request": {
     "method": "GET",
@@ -25,7 +25,8 @@
           "description": "Current bid/ask for every contract in one event.",
           "priceUsdc": "0.005",
           "seller": "odds-desk",
-          "sellerName": "Odds Desk"
+          "sellerName": "Odds Desk",
+          "sellerAllowlisted": true
         },
         {
           "id": "odds_history",
@@ -33,7 +34,8 @@
           "description": "Recorded prices since recording began, and the largest moves.",
           "priceUsdc": "0.02",
           "seller": "odds-desk",
-          "sellerName": "Odds Desk"
+          "sellerName": "Odds Desk",
+          "sellerAllowlisted": true
         },
         {
           "id": "deep_brief",
@@ -41,7 +43,8 @@
           "description": "Analysis of one event from recorded prices: implied probabilities, spreads, and price movement where enough history has been recorded (it says when there isn't), plus related markets in the same category.",
           "priceUsdc": "0.75",
           "seller": "odds-desk",
-          "sellerName": "Odds Desk"
+          "sellerName": "Odds Desk",
+          "sellerAllowlisted": true
         },
         {
           "id": "full_report",
@@ -49,7 +52,8 @@
           "description": "Offered by a seller that is not on the allowlist.",
           "priceUsdc": "0.01",
           "seller": "shady-reports",
-          "sellerName": "Shady Reports"
+          "sellerName": "Shady Reports",
+          "sellerAllowlisted": false
         }
       ]
     }

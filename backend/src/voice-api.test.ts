@@ -77,6 +77,7 @@ before(async () => {
     auth: createAuth({ agentToken: AGENT_TOKEN, operatorToken: OPERATOR_TOKEN, sessions }),
     sessions, accessCodes: CODES, sessionTtlSeconds: { agent: 60, operator: 60 }, voice,
     gatewayAvailable: async () => 5_000_000n,
+    sellerAddresses: { "odds-desk": SELLER.toLowerCase(), "shady-reports": "0x000000000000000000000000000000000000dEaD" },
   });
   router.add("GET", "/sellers/x", ({ res }) => void res.writeHead(200).end("{}"));
   const cors = createCors([ALLOWED_ORIGIN]);
@@ -126,6 +127,14 @@ test("an agent session can buy and read but never approve, decline or unfreeze",
   assert.equal(approved.status, 200);
   assert.equal(approved.json.state, "reserved"); // stub buyer does not execute payment
   assert.equal((await call("GET", "/api/budget", { token: operator })).status, 200, "operator scope also covers agent routes");
+});
+
+test("catalog marks which sellers are on the payee allowlist (display only)", async () => {
+  const r = await call("GET", "/api/catalog", { token: AGENT_TOKEN });
+  assert.equal(r.status, 200);
+  const bySeller = Object.fromEntries(r.json.items.map((i: { seller: string; sellerAllowlisted: boolean }) => [i.seller, i.sellerAllowlisted]));
+  assert.deepEqual(bySeller, { "odds-desk": true, "shady-reports": false }, "address match ignores case");
+  assert.equal(r.json.items.find((i: { id: string }) => i.id === "deep_brief").priceUsdc, "0.75", "existing fields unchanged");
 });
 
 test("expired and tampered session tokens are rejected", async () => {

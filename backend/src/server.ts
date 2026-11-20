@@ -5,6 +5,8 @@
  * odds recorder unless RECORDER_ENABLED=0 (set that while a standalone `npm run recorder` is running).
  */
 import { createServer } from "node:http";
+import Anthropic from "@anthropic-ai/sdk";
+import { createAssistant, DEFAULT_MODEL, type ModelClient } from "./assistant.ts";
 import { GatewayClient, type TransferResponse } from "@circle-fin/x402-batching/client";
 import { BatchFacilitatorClient } from "@circle-fin/x402-batching/server";
 import type { Hex } from "viem";
@@ -98,8 +100,38 @@ registerSellers(router, {
   maxTimeoutSeconds: Math.max(GATEWAY_AUTH_VALIDITY_WINDOW_SECONDS, minValiditySeconds),
 });
 const auth = createAuth({ agentToken, operatorToken, sessions });
+
+// Assistant: Claude on the server. The key never leaves this process and is never logged.
+const anthropicKey = process.env.ANTHROPIC_API_KEY?.trim() || undefined;
+const anthropicModel = optionalEnv("ANTHROPIC_MODEL", DEFAULT_MODEL);
+if (!/^claude-[a-z0-9.-]+$/.test(anthropicModel)) throw new Error("ANTHROPIC_MODEL must be a Claude model id such as claude-sonnet-5-5");
+let assistantProblem: string | null = null;
+let modelClient: ModelClient | null = null;
+if (anthropicKey) {
+  const anthropic = new Anthropic({ apiKey: anthropicKey, timeout: 90_000, maxRetries: 1 });
+  modelClient = { create: (params) => anthropic.beta.messages.create(params) };
+  // Free check that the configured model exists for this key (Models API).
+  anthropic.models.retrieve(anthropicModel).then(
+    (m) => log(`[assistant] model ${m.id} available`),
+    (err) => {
+      if (err instanceof Anthropic.NotFoundError) assistantProblem = `Model ${anthropicModel} isn't available for this API key.`;
+      else if (err instanceof Anthropic.AuthenticationError) assistantProblem = "The Anthropic API key was rejected.";
+      log(`[assistant] model check failed: ${assistantProblem ?? (err as Error).message}`);
+    },
+  );
+}
+const allowlisted = (sellerId: string) => {
+  const address = (payTo as Record<string, string | undefined>)[sellerId];
+  return address === undefined ? undefined : policy.allowedPayees.some((p) => p.toLowerCase() === address.toLowerCase());
+};
+const assistant = createAssistant({
+  db, ledger, buyer, market, policy, publicBaseUrl, gatewayAvailable, log,
+  model: modelClient, modelId: anthropicModel, problem: () => assistantProblem, sellerAllowlisted: allowlisted,
+});
+
 registerApi(router, {
   ledger, buyer, market, policy, publicBaseUrl, gatewayAvailable, voice, sessions, accessCodes, sessionTtlSeconds, auth,
+  sellerAddresses: payTo, assistant,
 });
 registerStreamsWebhook(router, {
   db, ledger, auth, securityToken: qnToken, log, explorerTx,
@@ -118,6 +150,7 @@ server.listen(port, host, () => {
   log(`[server] recorder ${recorder ? "on" : "off (RECORDER_ENABLED=0)"}; reconciler every 30 s`);
   log(`[server] sessions: agent login ${accessCodes.agent ? "on" : "off (no DEMO_ACCESS_CODE)"}, operator login ${accessCodes.operator ? "on" : "off (no OPERATOR_ACCESS_CODE)"}`);
   log(`[server] voice: ${voice.configured ? "configured" : "not configured (set ELEVENLABS_API_KEY and ELEVENLABS_AGENT_ID)"}; CORS origins: ${corsOrigins.join(", ") || "none"}`);
+  log(`[server] assistant: ${modelClient ? `configured (model ${anthropicModel})` : "not configured (set ANTHROPIC_API_KEY)"}`);
   log(`[server] streams webhook: ${qnToken ? "POST /webhooks/quicknode (HMAC verified)" : "off (set QN_STREAM_SECURITY_TOKEN)"}; watching ${gateway.address}`);
 });
 reconciler.start();
