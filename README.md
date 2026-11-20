@@ -15,7 +15,6 @@ UBC 2026 hackathon entry (Agentic Payments and AI track), built on Gemini Predic
 | What | Link |
 |---|---|
 | Live demo (Netlify) | **https://allowance-ubc-2026.netlify.app**: the demo is at [`/#/demo`](https://allowance-ubc-2026.netlify.app/#/demo) |
-| Backend (Railway) | https://allowance-backend-production.up.railway.app (API only; `GET /health` returns `{"ok":true}`) |
 | Source | https://github.com/pratyushsawant/allowance-main |
 | Arc Testnet explorer | https://explorer.testnet.arc.io |
 
