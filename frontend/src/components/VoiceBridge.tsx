@@ -103,7 +103,9 @@ export function VoiceBridge() {
         if (t && t.text === m.message && Date.now() - t.at < 10_000) return;
         emit({ type: "user_message", text: m.message });
       } else {
-        emit({ type: "agent_message", text: m.message, spoken: true });
+        // ElevenLabs' expressive voices add delivery tags like "[happy]" to the text: drop them for display.
+        const shown = m.message.replace(/\[[a-z ]{2,20}\]\s*/gi, "").trim();
+        if (shown) emit({ type: "agent_message", text: shown, spoken: true });
       }
     },
     onStatusChange: ({ status }) => voice.set({ status }),

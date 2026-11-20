@@ -90,7 +90,15 @@ The agent deposits testnet USDC into Circle Gateway. It pays each data request w
 - **Destination:** a webhook, `POST /webhooks/quicknode` on Railway. It checks the HMAC-SHA256 signature over nonce + timestamp + body, a 5-minute freshness window and a nonce replay guard, then de-duplicates and classifies each transfer: top-up, Gateway deposit or withdrawal, or unexpected outbound (which freezes spending).
 - **Why:** it gives onchain proof that funds moved, independent of the payment SDK.
 
-**ElevenLabs:** the ElevenLabs Agents React SDK (`@elevenlabs/react`) is integrated, and the backend mints conversation tokens so the API key stays server-side. It is **not configured** in this deployment (see Known gaps).
+**ElevenLabs (live):** ElevenLabs Agents through `@elevenlabs/react` (WebRTC voice), with agent `agent_4701m7x0rvw0fresesyaat3sdjpd`.
+- **Authentication:** enabled on the agent. The backend mints a conversation token per session (`POST /api/voice/session`), so the ElevenLabs API key never reaches the browser.
+- **One client tool, `ask_allowance`:** it sends the person's spoken words to the same Claude conversation as the chat panel (`POST /api/chat`). Spoken requests therefore pass the same purchase gate, spending policy and approval popup as typed ones. The agent then speaks Claude's answer.
+- **Where to use it:** tap the mic on `/#/demo` in Chrome or Edge; the browser asks for microphone access.
+- **Verified live (17:42 UTC), without a microphone, over a text-mode session:**
+  - the agent called `ask_allowance` with the user's words;
+  - Claude answered through the backend;
+  - the agent spoke the answer (audio received);
+  - no purchase was made.
 
 ## Architecture
 
@@ -221,7 +229,7 @@ A full run commits about 0.78 USDC of the 3.00 USDC daily cap, which resets at m
 
 ## Known gaps
 
-- **ElevenLabs voice isn't configured** on the backend yet ([docs/VOICE_INTEGRATION.md](docs/VOICE_INTEGRATION.md)). The app falls back to browser speech in Chrome and Edge, and to typing elsewhere.
+- **Voice needs a microphone and Chrome or Edge.** Our automated check used a text-mode ElevenLabs session, so live mic input in the deployed page still needs a person to try it. Without a mic, typing works the same way.
 - **Markets page prices:** the free Yahoo Finance charts come through Netlify's proxy, and Yahoo may answer `429` (rate limit) to Netlify's servers. CoinGecko and Polymarket data and the paid Gemini data through the assistant are unaffected.
 - **The Netlify site isn't connected to GitHub:** it was deployed from the CLI. Redeploy after changes, or link the repository in Netlify (base `frontend` is already in `netlify.toml`).
 - **The demo endpoint still accepts browser sessions:** `POST /api/purchases` accepts agent sessions as well as the server credential. The bundled frontend never uses it; restricting it is proposed in [BACKEND_STATUS.md](docs/BACKEND_STATUS.md#stale-browser-tabs).
