@@ -24,6 +24,7 @@
     "smoke:status": "node --env-file=.env scripts/transfer-status.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "1.6.0",
     "@circle-fin/x402-batching": "4.0.0",
     "@x402/core": "2.30.0",
     "@x402/evm": "2.30.0",

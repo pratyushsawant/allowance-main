@@ -26,7 +26,13 @@ As of 2026-11-20. Status labels: **Verified** / **Not verified** / **Assumption*
 | `f2cbc485` | 11:31 | Redeploy not triggered by the CLI here; most likely a dashboard variable change |
 | `da8d9547` | 11:46 | Streams receiver fix (parse any wrapper, raw-log fallback) |
 | `7d400e4a` | 12:34 | Real deep brief from recorded data. Live-verified with one paid brief at 12:48, settled at 13:01 ([ARCHITECTURE §10](ARCHITECTURE.md)). |
-| `315e6c55` | 13:11 | Percent display (at most one decimal, never normalized) and the new deep_brief catalog text. **Current.** |
+| `315e6c55` | 13:11 | Percent display (at most one decimal, never normalized) and the new deep_brief catalog text. |
+| `98a707e2` | 14:01 | Catalog items gain `sellerAllowlisted` (display only), for the frontend's rules panel and approval checks. Non-billable checks: ledger, budget and chain feed unchanged; auth, CORS, voice 503 and seller 402 as before. |
+| `5efe63c5` | 14:35 | Server-side Claude assistant (`POST /api/chat`, purchase gate, chat tables = migration 4). Spending frozen beforehand (14:2x) after unintended purchases from the old browser text agent. Without `ANTHROPIC_API_KEY`: `/api/assistant` reports not configured and `/api/chat` answers 503 with nothing bought (checked); ledger unchanged; recorder running. |
+| `f4602945` | 14:40 | Redeploy after `ANTHROPIC_API_KEY` was set (by you, in Railway). Startup model check: `claude-sonnet-5-5` available. |
+| `733100d7` | 14:42 | System prompt asks for plain text (the chat bubble doesn't render Markdown). Live chat tests: [BACKEND_STATUS](BACKEND_STATUS.md). **Current.** |
+
+**Assistant settings** (Railway service variables, never in the frontend): `ANTHROPIC_API_KEY` (required for chat), `ANTHROPIC_MODEL` (optional, default `claude-sonnet-5-5`; checked at startup with the free Models API). Set the key in the dashboard (Variables → New Variable) or with `railway variable set ANTHROPIC_API_KEY --stdin --service allowance-backend` in your own terminal; a redeploy applies it.
 
 Checks after the 12:34 deploy:
 - health ok;

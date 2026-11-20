@@ -134,6 +134,47 @@ const MIGRATIONS: string[] = [
     inserted    INTEGER NOT NULL
   );
   `,
+  // 4: assistant conversations (additive; nothing above changes)
+  `
+  CREATE TABLE chat_conversations (
+    id            TEXT PRIMARY KEY,
+    known_tickers TEXT NOT NULL DEFAULT '[]',
+    created_at    INTEGER NOT NULL,
+    updated_at    INTEGER NOT NULL
+  );
+  -- Messages exactly as sent to / returned by the model (tool calls and thinking blocks included),
+  -- grouped by the turn (message_id) that produced them.
+  CREATE TABLE chat_messages (
+    conversation_id TEXT NOT NULL REFERENCES chat_conversations(id),
+    seq             INTEGER NOT NULL,
+    turn_id         TEXT NOT NULL,
+    role            TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+    content         TEXT NOT NULL,
+    created_at      INTEGER NOT NULL,
+    PRIMARY KEY (conversation_id, seq)
+  );
+  -- One row per client message id: a repeated id returns the stored response and runs nothing again.
+  CREATE TABLE chat_turns (
+    message_id      TEXT PRIMARY KEY,
+    conversation_id TEXT NOT NULL REFERENCES chat_conversations(id),
+    kind            TEXT NOT NULL CHECK (kind IN ('user', 'event')),
+    text            TEXT NOT NULL,
+    status          TEXT NOT NULL CHECK (status IN ('running', 'done', 'failed')),
+    response        TEXT,
+    created_at      INTEGER NOT NULL,
+    updated_at      INTEGER NOT NULL
+  );
+  CREATE INDEX chat_turns_conversation ON chat_turns(conversation_id, created_at);
+  CREATE TABLE chat_purchases (
+    conversation_id TEXT NOT NULL REFERENCES chat_conversations(id),
+    purchase_id     TEXT NOT NULL REFERENCES purchases(id),
+    turn_id         TEXT NOT NULL,
+    ticker          TEXT NOT NULL,
+    title           TEXT,
+    created_at      INTEGER NOT NULL,
+    PRIMARY KEY (conversation_id, purchase_id)
+  );
+  `,
 ];
 
 export function openDatabase(path: string = process.env.DB_PATH?.trim() || DEFAULT_DB_PATH): DB {

@@ -1,6 +1,11 @@
 # Allowance backend: status assessment
 
-As of **2026-11-20, 13:15 UTC (07:15 CST)**, live deployment `315e6c55`. Measured against [PROJECT_BRIEF.md](../PROJECT_BRIEF.md) and the agreed backend-only scope (Phases 0–3 plus the deep brief, [ARCHITECTURE.md](ARCHITECTURE.md)).
+As of **2026-11-20, 14:50 UTC (08:50 CST)**, live deployment `733100d7`.
+
+Spending timeline:
+- **About 14:20 UTC:** frozen, after the old browser text agent bought 4 unintended 0.005 USDC snapshots.
+- **14:44 UTC:** unfrozen with your approval for the paid chat tests.
+- **Today's spend:** 1.53 of 2.00 USDC committed, so 0.47 is left until midnight America/Chicago. Measured against [PROJECT_BRIEF.md](../PROJECT_BRIEF.md) and the agreed backend-only scope (Phases 0–3 plus the deep brief, [ARCHITECTURE.md](ARCHITECTURE.md)).
 
 ## Verdict: demo-ready with gaps
 
@@ -18,6 +23,7 @@ It is **not complete**:
 
 | Gap | State |
 |---|---|
+| Chat assistant (Claude) | Live with `claude-sonnet-5-5`; no-spend behavior, one paid snapshot, and the approval flow for a 0.75 brief are verified through the API. Not yet: the allowlist refusal through chat, and the chat inside the UI. |
 | Voice | Never exercised. Blocked on ElevenLabs credentials. |
 | CORS | The teammate's frontend origins aren't configured |
 | Top-ups | Recorded, but not turned into spendable funds automatically |
@@ -53,17 +59,33 @@ Status key:
 | Freeze on an unexpected outbound transfer | **Implemented, unverified** on real chain data | Synthetic movement only (local and offline). No real outbound transfer has happened. |
 | "Confirmed top-ups raise the budget" (brief) | **Partial** | Top-ups are recorded as `top_up`. Spendable funds (the Gateway balance) rise only after a deposit. Auto-deposit isn't built; it's your decision. |
 | `gateway_withdrawal` classification | **Implemented, unverified** | No withdrawal observed |
-| **Deployment** (Railway, single instance, volume, health) | **Live-verified** | `https://allowance-backend-production.up.railway.app`, deployment `315e6c55` (13:11 UTC). Docker build on Railway, volume at 34 of 500 MB, local spending service stopped. After the redeploy:
+| **Deployment** (Railway, single instance, volume, health) | **Live-verified** | `https://allowance-backend-production.up.railway.app`, deployment `98a707e2` (14:01 UTC; adds `sellerAllowlisted` to catalog items). Docker build on Railway, volume at 34 of 500 MB, local spending service stopped. After the redeploys:
 - recorder resumed at poll 138;
 - ledger, budget and chain movements unchanged;
 - the new catalog text is served;
 - auth, CORS, voice and the seller's 402 behave as before. Full deploy history is in [DEPLOY §0](DEPLOY.md). |
 | **Frontend integration package** | **Implemented** | [FRONTEND_HANDOFF.md](FRONTEND_HANDOFF.md): base URL, roles, sessions, endpoints, states, polling, errors, demo flow, two-repo and CORS instructions. 22 labeled fixtures in [api-examples/](api-examples/README.md), secret-scanned clean. The deep-brief fixture is now the live purchase (captured 13:04 UTC). |
+| **Frontend app** (teammate's repo, `Allowance-Front-end`) | **Integrated, partly verified** | Wired to the live backend on 2026-11-20 (uncommitted, on `main`):
+- access-code sessions (memory only);
+- ledger, budget and onchain polling;
+- operator approvals and freeze;
+- read-only rules with the seller list from `sellerAllowlisted`;
+- chat through the server-side assistant (`POST /api/chat`) since 14:35 UTC; the earlier browser text agent was **removed** (it caused 4 unintended snapshot purchases);
+- ElevenLabs voice that switches on when the backend has it; its `buy` tool no longer buys.
+
+Verified at 14:11 UTC on `localhost:5173` against the live backend (build passes; a wrong code is refused, CORS OK). After a real demo-code login:
+- the payment feed shows the 2 real paid purchases (0.755 USDC) as **Settled on Arc**, with their tx links; the declined brief is left out;
+- the rules panel shows the live limits (1 / 2 / 0.25 USDC) and the seller list **Odds Desk**;
+- the budget meter shows 1.245 USDC left.
+
+Not verified yet: the new chat against the real model (needs the key), a purchase, approval or freeze from the UI (they spend or change live state), voice input inside the browser pane (it blocks the microphone). The frontend runs only on `localhost`; it isn't deployed. |
 | Live push to the UI (SSE/WebSocket) | **Missing**, by choice | Polling contract documented ([FRONTEND_HANDOFF §5](FRONTEND_HANDOFF.md)) |
 | General API rate limiting | **Missing** | Only failed logins are limited |
 | README sections the prizes require (decision loop, safety limits, Arc addresses, Gemini endpoints, ElevenLabs products, Stream setup) | **Partial** | The content exists across ARCHITECTURE, DEPLOY and VOICE_INTEGRATION; there's no root README yet |
 | Repository: consolidated `/frontend` + `/backend`, commits | **Missing** | Local backend repo, 0 commits, nothing pushed |
-| Tests | **Passing** | `npm test`: **61/61** and `tsc --noEmit` clean at 13:10 UTC (6 new: percent formatting, the overround case, the catalog text) |
+| Tests | **Passing** | `npm test`: **72/72** and `tsc --noEmit` clean at 14:30 UTC (10 new assistant tests with a scripted fake model: greetings and wait/stop never buy, one purchase per message, unknown tickers refused, replayed message ids never re-run, approval required over 0.25, frozen and unlisted seller refused, app events never buy, missing key and model failures give errors with no fallback purchase) |
+| **Chat assistant** (`src/assistant.ts`) | **Live-verified** (through the API): no-spend behavior, one paid snapshot, the 0.75 brief held for approval, approved by the operator, then explained | Claude via the Messages API (`ANTHROPIC_MODEL`, default `claude-sonnet-5-5`, fallbacks `default` on refusals), history in SQLite, free tools (search without prices, catalog, budget, this conversation's purchases and results) and one paid tool behind a server-side gate. Key set on Railway at 14:40 UTC; the startup model check passed. Live tests at 14:42 UTC, through the API rather than the UI; see [the live chat tests](#live-chat-tests-2026-11-20-spending-frozen). |
+| Unintended purchases (14:12–14:18 UTC) | **Recorded** | `390c5e47`, `d5b2902b`, `735e9528` (Philadelphia vs Montreal) and `6c7605e7` (BTC), 0.005 USDC each, from the old browser text agent (greetings and "wait" fell through to "buy a snapshot"). Not reversible; the backend's policy and single-charge rules held. Fixed by removing that agent. |
 
 ## Live deep-brief check (2026-11-20)
 
@@ -91,6 +113,44 @@ One purchase, authorized in chat for at most 0.75 USDC on Arc Testnet. It went t
 **Minor findings, fixed in deploy `315e6c55` (13:11 UTC):**
 - **Rounding:** this brief shows 52% and 49% (0.515 and 0.485 rounded up separately, so the two add to 101%). New results show 51.5% and 48.5%. Percentages are never forced to add up to 100%, and `probabilitiesSum` stays the exact total. This purchase's stored result was not rewritten.
 - **Catalog text:** the old description, "Related markets in the same category with current odds.", is replaced by one that describes the recorded-price analysis and the history rule.
+
+## Live chat tests (2026-11-20, spending frozen)
+
+These ran through `POST /api/chat` on the deployed backend with `claude-sonnet-5-5`. They used Anthropic tokens only; the freeze made any payment impossible.
+
+| Message | Result | Purchases |
+|---|---|---|
+| "Hello" | Natural reply that offers to look up markets and asks which one | none |
+| "wait", "stop", "never mind" | "Sure, I'll hold off. Nothing has been bought." and similar | none |
+| "What are the odds on the game tonight?" | Asked which game or team | none |
+| "What are the BTC odds right now?" | Several BTC markets match, so it listed them (from search, without prices) and asked which one, naming the 0.005 snapshot price | none |
+| "Explain your last answer" | Explained its clarifying question from the earlier search, without buying | none |
+| The same message id again | Stored answer returned in 0.1 s (`replayed`); nothing re-run | none |
+| "Get me a deep brief on Minnesota vs Oklahoma State" | Tried once, and the policy refused it because spending is frozen. It gave the freeze reason and said it wouldn't retry. | one `blocked` row, nothing charged |
+
+**Ledger:** 7 → 8 rows (the one blocked row). Committed spend stayed at 0.775 USDC and Gateway funds at 1.935; still frozen.
+
+**Fixed after the tests:** replies used Markdown (`**bold**`), which the chat bubble shows as raw text. The system prompt now asks for plain text. Redeployed as `733100d7` and rechecked: plain text, no purchase.
+
+### Paid chat tests (14:44 UTC, approved by you, spending unfrozen)
+
+All in one conversation, through `POST /api/chat`:
+
+| Step | Result |
+|---|---|
+| "What are the current odds for Minnesota vs Oklahoma State?" | Exactly **one** purchase: `33f34a3c` `odds_snapshot`, 0.005 USDC, auto-approved, `accepted`. The answer gave real numbers with a timestamp: "As of Nov 20, 8:44 AM CST … Minnesota about 49.5%, Oklahoma State about 49.5% … best bid 0.49, best ask 0.50 … the payment has gone through, and onchain settlement is still pending." |
+| "Explain that" | Explained bid, ask, midpoint and the 99% total from the stored result. **No purchase.** |
+| "Now get me a deep brief on that game" | `a6821740` `deep_brief`, 0.75 USDC: **awaiting approval** ("waiting for your approval … expires at 8:54 AM CST. Nothing has been paid for it yet"). |
+| Operator approval, sent once (operator credential, not chat) | `accepted`, Gateway transfer `868e0e94…` |
+| App event to the conversation | The assistant explained the brief without buying anything: Minnesota down 2 points from 51.5%, Oklahoma State up 1 point from 48.5%, a 1-cent spread, and 7 failed recorder polls flagged in the window. |
+
+**Ledger:** +2 charged rows, nothing else. Committed spend 0.775 → 1.53 and Gateway funds 1.935 → 1.18, both exactly 0.755.
+
+**Settlement:** both purchases settled at 14:50 UTC in one batch tx, `0x7d8bfcd3c860bf81462a1a074632196fe9687d4c3656c9b73958a96a65822828`, about 6 minutes after they were accepted.
+
+**Not yet verified:**
+- the allowlist refusal through chat (the policy refusal itself is live-verified elsewhere);
+- the chat inside the UI, which needs a login on the frontend.
 
 ## The brief's demo moments, backend side
 
