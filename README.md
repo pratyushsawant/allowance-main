@@ -21,11 +21,19 @@ UBC 2026 hackathon entry (Agentic Payments and AI track), built on Gemini Predic
 
 ### Demo access for judges
 
-The live demo needs an **access code**, because purchases spend real testnet USDC from the team's wallet. The code is **not** in this repository or in the site's code.
+Open [the live demo](https://allowance-ubc-2026.netlify.app/#/demo) and enter the **demo access code**:
 
-- **Demo access code:** provided privately to judges in the Devpost submission (judges' notes), or on request from the team at the event.
-  - It gives an *agent* session: you can chat and the assistant may buy small data items within the rules.
-- **Operator code:** approving purchases over 0.25 USDC and freezing or unfreezing spending need the separate operator code. The team holds it and will demo approvals in person.
+```text
+-l4aTBpuSG6V
+```
+
+(It starts with a hyphen.)
+
+- **What it allows:** an *agent* session. You can chat with the assistant, and when you ask for fresh data it may buy small items with **testnet** USDC, inside the rules below. Items up to 0.25 USDC buy automatically.
+- **What it doesn't allow:**
+  - anything over 0.25 USDC (the deep brief) waits for a person;
+  - approving, declining, freezing or unfreezing needs the separate **operator code**. The team keeps that one private and demos approvals in person.
+- **Shared budget:** the daily cap (3.00 USDC) is shared by everyone using this code, and the team may rotate the code after judging.
 - **Spending may be frozen when you visit.** The red banner says so. The assistant still chats, searches markets and explains past results, but every purchase is refused and nothing is charged until an operator unfreezes it.
 
 ## Decision loop
