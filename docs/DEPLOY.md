@@ -190,3 +190,44 @@ Signature verification stayed on for the whole test.
 | Real Quicknode delivery | **Not done.** Needs a public URL and the Stream. |
 
 The local development database now contains that one synthetic anomaly (block 1, tx `0x36e4…7562`, `unexpected_outbound`). It doesn't affect spending, since the freeze was lifted. A deployed instance starts without it.
+
+## 6. Combined repository and frontend hosting
+
+The repository holds `backend/` (Railway) and `frontend/` (static site). They deploy separately, and only the frontend's origin connects them (CORS). Nothing here was done yet: no commit, no new repository, no Netlify site, no Railway change.
+
+### 6.1 Backend on Railway (unchanged)
+
+- Keep deploying with `railway up` **from `backend/`**. The CLI's project link is stored per directory, and `backend/` didn't move. If you move or rename the folder, run `railway link` in `backend/` again.
+- **Optional, if you connect Railway to the new GitHub repository:**
+  - service → Settings → **Root Directory** `/backend` (the Dockerfile is there);
+  - **Watch Paths** `/backend/**`, so frontend-only commits don't redeploy the backend.
+- No variable changes are needed for the move itself.
+
+### 6.2 Frontend on Netlify
+
+1. **Create the site:** Netlify → Add new site → Import from Git → the submission repository. Leave the build fields empty: the root [`netlify.toml`](../netlify.toml) sets them.
+   - `base = "frontend"`, `command = "npm ci && npm run build"`, `publish = "dist"` (that is, `frontend/dist`), Node 22;
+   - the `/api/yahoo/*` rewrite for the Markets page.
+2. **Environment (optional):** `VITE_API_URL` defaults to `https://allowance-backend-production.up.railway.app`.
+   - Never set `VITE_USE_MOCK` on a deployed site.
+   - Never put a secret in any `VITE_` variable; the build is public.
+3. **Deploy.** Note the production origin, e.g. `https://<site>.netlify.app`: scheme and host, no path, no trailing slash.
+   - Deploy previews get a different URL on each push and won't pass CORS. Use the production URL, or a fixed branch subdomain that you also add.
+4. **Allow the origin on Railway:** service → Variables → `CORS_ALLOWED_ORIGINS`. Keep the existing entries and append the new one, comma-separated:
+   - `http://localhost:3000,http://localhost:5173,https://<site>.netlify.app`;
+   - apply or deploy the change: the backend reads it at startup.
+5. **Verify** (no credentials needed):
+   ```bash
+   curl -s -o /dev/null -w "%{http_code}\n" -X OPTIONS \
+     -H "Origin: https://<site>.netlify.app" -H "Access-Control-Request-Method: POST" \
+     -H "Access-Control-Request-Headers: authorization,content-type" \
+     https://allowance-backend-production.up.railway.app/api/chat      # expect 204
+   ```
+   Then open `https://<site>.netlify.app/#/demo`, enter the demo access code, and check the **Live** pill, the budget and the payments list.
+
+Routing uses the URL hash (`#/demo`, `#/markets`), so no SPA redirect rule is needed.
+
+### 6.3 Local origins
+
+- **Allowed now:** `http://localhost:5173` (`npm run dev`) and `http://localhost:3000` (`npm run dev -- --port 3000`).
+- **Refused (403):** `npm run preview` (port 4173) and `127.0.0.1` URLs. Use `localhost`, or add that exact origin.

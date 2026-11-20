@@ -14,9 +14,9 @@ Labels used below: **LIVE** (verified against the deployed service), **MOCK** (p
 | CORS | Allowed origins are currently `http://localhost:3000` and `http://localhost:5173`. **Send the backend owner your deployed origin** (for example `https://allowance.vercel.app`) and it will be added. Requests from other origins fail the preflight (403). |
 | Transport | JSON over HTTPS. Credentials go in `Authorization: Bearer <token>`; no cookies. |
 
-### Two repositories, deployed independently
+### One repository, deployed separately
 
-The frontend lives in its own repository and deployment and talks to the backend only over HTTPS at the base URL above. No backend code or secrets are needed in the frontend repo; [api-examples/](api-examples/README.md) can be copied in as mocks.
+**Update 2026-11-20:** the frontend is now in this repository under [`/frontend`](../frontend) and is the reference implementation of this contract ([frontend/README.md](../frontend/README.md) maps each UI piece to its endpoint). It still talks to the backend only over HTTPS at the base URL above, and deploys separately ([DEPLOY.md §6](DEPLOY.md#6-combined-repository-and-frontend-hosting)). No backend code or secrets are needed in the frontend; [api-examples/](api-examples/README.md) can serve as mocks.
 
 **To get CORS enabled, send the backend owner your exact origins:**
 - scheme + host + port, no path, no trailing slash, e.g. `https://allowance-ui.vercel.app` and `http://localhost:5173`;
@@ -25,7 +25,7 @@ The frontend lives in its own repository and deployment and talks to the backend
 
 Until your origin is added, browser calls from it fail the preflight with 403 `origin_not_allowed`. Server-side calls and curl aren't affected.
 
-Before submission, both codebases get consolidated into one repository (`/frontend`, `/backend`) with a root README. Keep your repository free of secrets and build output so that move is clean.
+The consolidation into `/frontend` + `/backend` with a root README is done locally (not committed yet).
 
 ## 2. Authentication and roles
 
@@ -76,6 +76,10 @@ All bodies are JSON. Amounts arrive in two forms: `amount`-style fields are **st
 Not for the frontend: `/sellers/*` (internal x402 sellers the backend buys from) and `/webhooks/quicknode` (signed Quicknode deliveries only).
 
 ### `POST /api/purchases` details
+
+> **The bundled frontend doesn't call this endpoint.** Purchases happen only inside the server-side assistant (`POST /api/chat`), behind its purchase gate. The endpoint stays for server-side callers (smoke scripts with `AGENT_API_TOKEN`). Today an agent *session* can still call it, which is how a browser tab with the old keyword agent bought unintended snapshots. Restricting it to the static credential is proposed but not deployed ([BACKEND_STATUS: stale tabs](BACKEND_STATUS.md#stale-browser-tabs)).
+>
+> `GET /api/chain/movements` sends `explorer` only when the backend knows the explorer, so build the Arc explorer URL from `txHash` when it's missing. `classification` can also be `unrelated`.
 
 - `item`: one of `odds_snapshot` ($0.005), `odds_history` ($0.02), `deep_brief` ($0.75), `full_report` ($0.01, from a seller that is **not** allowlisted, so it is always blocked).
 - `ticker`: an event ticker from `/api/markets/search`, e.g. `NCAAM-2611201730-MINN-OKST-M`.

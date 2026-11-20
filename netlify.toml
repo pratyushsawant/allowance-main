@@ -1,0 +1,27 @@
+# Netlify: the static Vite build in frontend/. The backend (backend/) is deployed separately on Railway.
+# `base` makes Netlify run the build inside frontend/; `publish` is relative to it (frontend/dist).
+[build]
+  base = "frontend"
+  command = "npm ci && npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Optional: VITE_API_URL defaults to https://allowance-backend-production.up.railway.app (see frontend/src/config.ts).
+  # Never set VITE_USE_MOCK here, and never put a secret in any VITE_ variable: the build is public.
+
+# The Markets page calls /api/yahoo/... because Yahoo Finance blocks browser (CORS) requests.
+# In `npm run dev` the Vite proxy handles it; on Netlify this rewrite does the same job.
+[[redirects]]
+  from = "/api/yahoo/*"
+  to = "https://query1.finance.yahoo.com/:splat"
+  status = 200
+  force = true
+  headers = { User-Agent = "Mozilla/5.0" }
+
+# SPA fallback (the app uses hash routes like /#/demo, but a hard refresh on any path still loads it).
+# Must stay after the /api/yahoo rule: Netlify applies the first matching rule.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

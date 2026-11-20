@@ -1,11 +1,17 @@
 # Allowance backend: status assessment
 
-As of **2026-11-20, 14:50 UTC (08:50 CST)**, live deployment `733100d7`.
+As of **2026-11-20, 15:30 UTC (09:30 CST)**, live deployment `733100d7` (unchanged today since the chat assistant). The backend code is committed and merged on `master` (PR #1, `69af254`). The frontend now lives in this repository under [`/frontend`](../frontend), **uncommitted** ([details](#consolidation-and-frontend-integration-2026-11-20-0905-0930-cst)).
 
 Spending timeline:
 - **About 14:20 UTC:** frozen, after the old browser text agent bought 4 unintended 0.005 USDC snapshots.
-- **14:44 UTC:** unfrozen with your approval for the paid chat tests.
-- **Today's spend:** 1.53 of 2.00 USDC committed, so 0.47 is left until midnight America/Chicago. Measured against [PROJECT_BRIEF.md](../PROJECT_BRIEF.md) and the agreed backend-only scope (Phases 0–3 plus the deep brief, [ARCHITECTURE.md](ARCHITECTURE.md)).
+- **14:44 UTC:** unfrozen with your approval for the two paid chat tests.
+- **14:50 UTC:** both tests settled in one onchain batch ([reconciliation](#paid-chat-tests-1444-utc-approved-by-you-spending-unfrozen)).
+- **About 15:02 UTC (09:02 CST): frozen again** ("Refrozen after the two authorized tests settled; integration work in progress"). **Still frozen now.**
+- **Today's spend:** 1.53 of 2.00 USDC committed, so **0.47 is left** until midnight America/Chicago. Gateway holds 1.18 USDC.
+
+> **Demo budget today:** a full demo run commits about 0.78 USDC, so it **no longer fits** under today's cap. A 0.005 snapshot fits, but a 0.75 deep brief would be **refused by the daily budget** (nothing charged). To show the approval flow today, either present that refusal as the "rules work" moment, or raise `DAILY_CAP_USDC` on Railway, which is your decision (a limit increase). The cap resets at midnight America/Chicago.
+
+Measured against [PROJECT_BRIEF.md](../PROJECT_BRIEF.md) and the agreed scope (Phases 0–3 plus the deep brief, [ARCHITECTURE.md](ARCHITECTURE.md)).
 
 ## Verdict: demo-ready with gaps
 
@@ -23,11 +29,12 @@ It is **not complete**:
 
 | Gap | State |
 |---|---|
-| Chat assistant (Claude) | Live with `claude-sonnet-5-5`; no-spend behavior, one paid snapshot, and the approval flow for a 0.75 brief are verified through the API. Not yet: the allowlist refusal through chat, and the chat inside the UI. |
-| Voice | Never exercised. Blocked on ElevenLabs credentials. |
-| CORS | The teammate's frontend origins aren't configured |
+| Chat assistant (Claude) | Live with `claude-sonnet-5-5`; no-spend behavior, one paid snapshot, and the approval flow for a 0.75 brief are verified through the API. The UI's chat handling (replies, errors, Stop, approvals, restore after refresh) is verified against a **mock** backend. Not yet: a real chat message typed in the UI, and the allowlist refusal through chat. |
+| Voice | Never exercised. Blocked on ElevenLabs credentials. Browser speech is the fallback; unsupported browsers get a disabled mic with an explanation. |
+| CORS | `http://localhost:3000` and `http://localhost:5173` verified live (204). The hosted frontend's origin doesn't exist yet. |
+| Stale browser tabs | A tab loaded before the chat fix still runs the old keyword agent, which can call `POST /api/purchases` with its agent session. The freeze blocks it today. A server-side fix is ready to build but **not approved or deployed** ([details](#stale-browser-tabs)). |
 | Top-ups | Recorded, but not turned into spendable funds automatically |
-| Submission | No root README, consolidated repository or commits yet |
+| Submission | Consolidated layout, root README and `.env.example` files are ready locally. **Nothing committed**; no new repository yet. |
 
 Status key:
 - **Live-verified:** exercised against real services on Arc Testnet or the deployed backend.
@@ -148,9 +155,21 @@ All in one conversation, through `POST /api/chat`:
 
 **Settlement:** both purchases settled at 14:50 UTC in one batch tx, `0x7d8bfcd3c860bf81462a1a074632196fe9687d4c3656c9b73958a96a65822828`, about 6 minutes after they were accepted.
 
+**Reconciliation (checked 15:01 UTC, before any further work):**
+
+| Purchase | Item | Price | State | Gateway transfer | Settlement |
+|---|---|---|---|---|---|
+| `33f34a3c-b644-40e8-ac8a-4be719883741` | odds_snapshot | 0.005 | `settled`, updated 14:50:29 UTC | `c1a97561-7fef-4ff6-b7a9-d91dfda1928b` | tx above |
+| `a6821740-1256-4c20-b4a6-3effe578f494` | deep_brief | 0.75 | `settled`, updated 14:50:30 UTC (operator-approved once) | `868e0e94-7ba1-4a51-9189-e5492e3e52c0` | tx above |
+
+- **Onchain:** `eth_getTransactionReceipt` on the public Arc RPC shows status `0x1`, block 73204612. Acceptance (Gateway `accepted`) and settlement (this receipt) are separate facts, and both are confirmed.
+- **One charge each:** two rows, two Gateway transfers, and committed spend rose by exactly 0.755. The brief blocked earlier (`7f7b18b2`, frozen) charged nothing.
+- **Follow-ups bought nothing:** there is no purchase after `a6821740`, so "Explain that" and the app-event explanation reused results.
+- **Nothing was repeated.** No settlement watcher was still running.
+
 **Not yet verified:**
 - the allowlist refusal through chat (the policy refusal itself is live-verified elsewhere);
-- the chat inside the UI, which needs a login on the frontend.
+- a real chat message typed in the UI. Its code paths are verified against a mock backend; you chose not to spend Anthropic tokens on UI chat tests.
 
 ## The brief's demo moments, backend side
 
@@ -159,8 +178,8 @@ All in one conversation, through `POST /api/chat`:
 | Pays $0.005 on its own | Live-verified |
 | Asks before a $0.75 purchase | Live-verified on Railway end to end: held, agent can't approve, operator approves, paid once, settled |
 | Refuses a seller not on the allowlist | Live-verified |
-| Logs every cent in a live ledger | Ledger API live-verified; the UI is the teammate's |
-| Analytics: odds moved today → chart | Data live; often flat overnight; the chart is the teammate's |
+| Logs every cent in a live ledger | Ledger API live-verified. The UI's payments list shows every state, including "Not charged" rows with the reason, and was checked on a snapshot of the live ledger. |
+| Analytics: odds moved today → chart | Data live, but often flat overnight. The UI shows the leading outcome for each paid purchase; there is no `odds_history` chart in the demo. |
 | Deep brief after approval | Live-verified (real analytics; flat market at the time) |
 | Onchain proof: Stream event lands | Live-verified with a deposit. A faucet top-up is recorded, but the budget doesn't rise until a deposit. |
 
@@ -169,38 +188,76 @@ All in one conversation, through `POST /api/chat`:
 | # | Blocker | Owner | Notes |
 |---|---|---|---|
 | 1 | ElevenLabs: create the agent with its 5 client tools ("Wait for response"), require authentication, and set `ELEVENLABS_API_KEY` and `ELEVENLABS_AGENT_ID` on Railway. Then the backend verifies a live voice session. | **You** (account), then **backend** | No voice without it; the ElevenLabs bounty needs audio in the video |
-| 2 | Exact frontend origins → CORS on Railway | **Teammate** supplies them; **backend** sets them | Exact origins only, no wildcards, no per-deploy preview URLs |
-| 3 | Root README with the prize-required sections; consolidate into `/frontend` + `/backend`; first commits | **Backend** drafts; **you** decide on publishing | Re-verify the hackathon's repository-access rule first (the brief's guide says "a public GitHub repo") |
-| 4 | Decide whether a confirmed top-up auto-deposits into Gateway | **You** decide; **backend** builds | Until then the demo shows the deposit event |
-| 5 | Rehearsal budget: each full demo run commits $0.775 of the $2/day cap | **You** decide | Today (America/Chicago): $0.755 used, $1.245 left, so one more full run fits today. Gateway holds $1.955, about two full runs before another deposit. |
-| 6 | Optional: real unexpected-outbound test (send 0.01 USDC from the agent wallet to our own seller) to prove the freeze on real data | **Backend**, with your approval (it moves funds) | Synthetic only so far |
+| 2 | Host the frontend (Netlify, [DEPLOY §6](DEPLOY.md#6-combined-repository-and-frontend-hosting)), then add its exact origin to `CORS_ALLOWED_ORIGINS` on Railway | **You** (accounts) | Exact origins only, no wildcards, no per-deploy preview URLs |
+| 3 | Commit the combined repository and create the submission repository | **You** decide | Re-verify the hackathon's repository-access rule first (the brief's guide says "a public GitHub repo"). The layout, root README, `.gitignore` and `.env.example` files are ready, and a secret scan passed. |
+| 4 | Today's budget: 0.47 USDC left, so a 0.75 brief is refused by the daily cap ([note at the top](#allowance-backend-status-assessment)) | **You** decide | Present it as a refusal, raise the cap, or record after midnight America/Chicago. Gateway holds 1.18, enough for one brief and some snapshots. |
+| 5 | Unfreeze for the demo | **You** (operator code, Rules → Unfreeze) | Spending is frozen now. Close or reload any browser tab opened before about 08:50 CST first ([stale tabs](#stale-browser-tabs)). |
+| 6 | Decide whether a confirmed top-up auto-deposits into Gateway | **You** decide; **backend** builds | Until then the demo shows the deposit event |
+| 7 | Optional: real unexpected-outbound test (send 0.01 USDC from the agent wallet to our own seller) to prove the freeze on real data | **Backend**, with your approval (it moves funds) | Synthetic only so far |
 
-## Frontend teammate's tasks (not backend)
+## Consolidation and frontend integration (2026-11-20, 09:05–09:30 CST)
 
-- **Build the UI pieces:** voice panel, live ledger, budget meter, approval card with countdown, freeze toggle, odds step-chart from `odds_history` points, onchain movements feed. Each maps to an endpoint in [FRONTEND_HANDOFF §3–5](FRONTEND_HANDOFF.md).
-- **Percentages:** show each string as given, at most one decimal. Display `probabilitiesSum` for a total; never add the per-contract strings. Parse with `parseFloat`; older stored results use whole numbers ([FRONTEND_HANDOFF §3](FRONTEND_HANDOFF.md)).
-- **Show settlement separately:** `accepted` (paid, result available) and `settled` (onchain, `settlementTx` set) are separate states. Settlement took about 13 minutes in the live check.
-- **Sessions:**
-  - the person types access codes at runtime;
-  - the agent token is the only one tool handlers see;
-  - the operator token sits in a separate module and is requested only on Approve, Decline, Freeze or Unfreeze;
-  - tokens live in memory only.
-- **ElevenLabs React wiring:**
-  - `clientTools` handlers that call the API;
-  - one idempotency key per `buy`, reused on retries;
-  - `sendUserMessage` after approval;
-  - a spoken alert when `frozen` flips;
-  - a text-only fallback while voice is unconfigured.
-- **Polling and back-off** as documented.
-- **Their own repository and deployment**, then send the exact origins.
-- **The demo recording** of the UI with audio on.
+**Layout.** This repository now holds both halves:
 
-## Two-repository development, then consolidation
+| Path | What | Deployed by |
+|---|---|---|
+| `backend/` | Unchanged location and code (no backend change today after PR #1) | Railway, `railway up` from `backend/` (unaffected) |
+| `frontend/` | Copy of `/Users/pratyushsawant/Documents/VSC/Allowance-Front-end` at `6b7fde6` **plus its uncommitted work**, then the integration fixes below | Netlify via the root `netlify.toml` (`base = "frontend"`), not set up yet |
+| `README.md`, `netlify.toml`, `.gitignore` | Root README, Netlify config (moved up from the frontend), ignore rules for both halves | |
+| `frontend/.env.example` | `VITE_API_URL`, `VITE_USE_MOCK` (names only; the build is public) | |
 
-- **Now:** the frontend and backend are separate private repositories, deployed independently. The frontend uses the backend's public HTTPS URL. CORS allows only exact listed origins. No backend secret or static credential ships in the frontend.
-- **Before submission:**
-  - consolidate into one repository with `/frontend` and `/backend`;
-  - write a root README and separate deployment instructions per part;
-  - a root `.gitignore` must keep out `.env*` (except `.env.example`), `backend/data/`, `*.db*`, `backend/.smoke/`, `node_modules/` and frontend build output;
-  - run a secret scan before the first commit;
-  - verify the hackathon's repository-access requirement before choosing public or private.
+- **Copy:** excluded `.git`, `node_modules`, `dist`, `.env*`, `*.local` and `.DS_Store`. The copy was byte-identical to the source before any edit.
+- **Original frontend repository:** not modified. Its 14 modified and 7 untracked files are still uncommitted there, as before.
+- **Nothing committed** in either repository; no remote changed.
+- **Secret check:** `git add --dry-run` lists 47 files to add. A pattern scan, plus a check of 8 real secret values from `backend/.env` against those files, found 0 matches.
+
+**Frontend fixes (all in `frontend/src`):**
+
+| Area | Before | Now |
+|---|---|---|
+| Purchases from the browser | Unused `backend.buy` client | Removed: no browser code path calls `POST /api/purchases` |
+| Purchase states | Blocked, declined and expired rows were hidden; `needs_review` showed as "Payment failed" | Every state is shown. **Not charged** rows carry the backend's reason; `needs_review` → **Held for review**; awaiting → **Waiting for approval** |
+| Spending labels | `toFixed(2)` turned 0.005 into "0.01" on the landing page; remaining budget and percentages were computed in the browser | The backend's exact labels (`remainingTodayUsdc`, `committedTodayUsdc`, `dailyCapUsdc`, `availableFundsUsdc`), and "today" uses the backend's budget day and time zone |
+| Chain movements | Type missing `block`, `logIndex`, `from`, `to` and `unrelated`, and assumed `explorer` was always present; shown only as fake "AI" chat lines | Type matches `streams.ts`; Arc explorer fallback; **Onchain activity** card (Payments view); new transfers appear as app notices, never as AI messages |
+| Freeze | Visible only on the Rules view | Banner on every demo view, plus the sidebar |
+| Session expiry | Polling stopped silently after 2 h, and a server-side 401 during a poll popped the login dialog | **Live / Session expired · Log in / Can't reach the backend** pill; polls never prompt |
+| Chat | Lost on refresh; `incomplete` looked normal; the Markets drawer had no Stop button | Restored from `GET /api/chat/:id` (conversation id in sessionStorage, deduplicated); **Answer cut short** chip; Stop on the Markets page too |
+| Voice controls | `alert()` when speech recognition was missing | Mic disabled with an inline explanation; `speechSynthesis` guarded |
+| Mock and placeholder content | Landing rules demo used non-existent sellers (`gemini-markets`), so with the live rules every sample showed as blocked; the illustration used 5.00 a day and 0.50 approval; the Rules view showed the editable mock form before login | Real catalog items and default limits; illustration labelled "example"; labelled logged-out states; mock mode badged and mirrors the real catalog |
+| Approval popup | Rounded amount | Exact amount, the backend's remaining budget, the approval's expiry time, and an operator-only note |
+
+**Verification:**
+
+| Check | Result | Kind |
+|---|---|---|
+| Backend `npm test` (Node 22) | **72/72 pass**; `tsc --noEmit` clean | Local |
+| Frontend `npm run build` (`tsc -b` + Vite) | Clean. One existing warning: the bundle is over 500 kB (ElevenLabs SDK) | Local |
+| Frontend `npm run lint` | 0 errors; 7 existing React-style warnings (the original had 8) | Local |
+| Payment reconciliation, onchain receipt, refreeze | See above | **Live** (read-only + freeze) |
+| CORS preflight to `/api/chat` | `localhost:3000` and `localhost:5173` → 204 with matching origin; `localhost:4173` and a foreign origin → 403; unauthenticated `/api/budget` → 401 | **Live** |
+| Headless Chrome against a contract-shaped **mock** backend: wrong code; login; every purchase state; frozen banner; sidebar and Gateway labels; chat reply; 503 / 429 / 502 / 409 / network errors; incomplete; Stop; approval popup → operator code → approve (refused while frozen) and decline; assistant's follow-up; Payments and Rules views; refresh restores chat; session expiry and re-login; no page exceptions or dialogs | **42/42** | Mock |
+| Same UI fed a **read-only snapshot of the live API** (budget, purchases, catalog, movements): 0.47 left, real freeze reason, 1.18 in Gateway, both authorized purchases **Settled on Arc** with the `0x7d8bfcd3…` link, the blocked and declined briefs as **Not charged**, 1.53 committed, the QuickNode 0.5 deposit, and the landing rules check with live limits | **10/10** | Live data, replayed |
+| Live frontend on `:3000` against Railway, logged out: login prompt, Cancel → "Not connected · Log in", labelled rules and onchain placeholders, no exceptions; browser without speech recognition → mic disabled, no `alert()` | **10/10** | Live (no credentials) |
+
+**Not verified end to end:**
+- a real chat message typed in the UI against the live assistant (Anthropic cost; you chose mocks);
+- a real approval clicked in the UI (it would need a real purchase);
+- ElevenLabs voice (not configured);
+- the hosted frontend (not deployed).
+
+The mock backend, browser driver and screenshots are in this session's scratchpad, not in the repository.
+
+## Stale browser tabs
+
+A tab loaded before the chat fix (about 08:50 CST) still runs the old keyword agent, which calls `POST /api/purchases` directly with its agent session.
+- **Today:** the freeze refuses all of those calls, so nothing can be charged. Its session expires within 2 hours of its login; after that it asks for the access code again.
+- **Before unfreezing:** close or reload every Allowance tab.
+- **Server-side fix, not built or deployed (needs your approval and a Railway deploy):** let `POST /api/purchases` accept only the static server credential (`AGENT_API_TOKEN`) and refuse browser sessions with 403. The current frontend never calls it, and the assistant buys inside the server, so neither is affected. Backend policy stays authoritative whatever the frontend version.
+
+## Restart instructions
+
+1. **State:** live backend `733100d7`, **frozen**, 0.47 USDC left today, 1.18 in Gateway. No local process spends. An old Vite dev server for the original frontend repository may still be running on `:5173`.
+2. **Backend** (Node 22): `cd backend && nvm use && npm ci && npm run typecheck && npm test`. Don't run `npm start` against the shared wallet while Railway is live.
+3. **Frontend:** `cd frontend && npm ci && npm run dev`, then open `http://localhost:5173/#/demo` (or `npm run dev -- --port 3000`). Enter the demo access code; the operator code is asked for only on Approve, Decline, Freeze or Unfreeze.
+4. **Before a paid demo:** close old tabs, check the budget (see the note at the top), then unfreeze in Rules (operator code).
+5. **Deploy steps:** [DEPLOY.md §6](DEPLOY.md#6-combined-repository-and-frontend-hosting).

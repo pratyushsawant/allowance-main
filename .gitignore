@@ -21,3 +21,15 @@ backend/.smoke/
 
 # --- OS noise ---
 .DS_Store
+
+# --- Frontend (frontend/ also has its own .gitignore) ---
+dist-ssr/
+*.local
+*.log
+npm-debug.log*
+
+# --- Editors and local tooling (absolute local paths live here) ---
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.claude/
