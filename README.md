@@ -52,7 +52,7 @@ The live demo needs an **access code**, because purchases spend real testnet USD
 |---|---|
 | Seller allowlist | Only the Odds Desk payee `0x3b53b70d0275e5b2f8a3DFe6Cb0d949B3D7Ea14e`. The "Shady Reports" seller `0xc0018D576887922BC9Cbc4C40B2cfB4d40Fc6329` is deliberately not allowlisted. |
 | Auto-approve | Up to 0.25 USDC. Above that, a person approves with the **operator** code; the agent and Claude can't approve. |
-| Per purchase / per day | 1.00 USDC / 2.00 USDC (day = America/Chicago) |
+| Per purchase / per day | 1.00 USDC / 3.00 USDC (day = America/Chicago). The daily cap was raised from 2.00 on Nov 20 so the approval demo fits the day's budget. |
 | Freeze | Operator kill switch. It also trips automatically on an unexpected outbound transfer seen by QuickNode Streams. |
 | Chat purchase gate | Never on "wait / stop / cancel / never mind" or a bare greeting; at most one purchase per message; ticker must be known; the same message id is never run twice |
 | Payment binding | The signature is bound to the exact payee, amount, asset, network and validity; anything else is refused before signing |
@@ -161,7 +161,7 @@ Full annotated lists: [`backend/.env.example`](backend/.env.example) and [`front
 |---|---|
 | Wallets (testnet) | `BUYER_PRIVATE_KEY`; `SELLER_ADDRESS`, `UNLISTED_SELLER_ADDRESS` (seller private keys are for local smoke tests only) |
 | Access | `AGENT_API_TOKEN`, `OPERATOR_API_TOKEN`, `SESSION_SECRET`, `DEMO_ACCESS_CODE`, `OPERATOR_ACCESS_CODE`, `AGENT_SESSION_TTL_SECONDS`, `OPERATOR_SESSION_TTL_SECONDS`, `AUTH_VERSION` |
-| Spending policy | `AUTO_APPROVE_MAX_USDC` (0.25), `PER_CALL_MAX_USDC` (1.00), `DAILY_CAP_USDC` (2.00), `BUDGET_TIME_ZONE` (America/Chicago), `ALLOWED_PAYEES` (optional) |
+| Spending policy | `AUTO_APPROVE_MAX_USDC` (0.25), `PER_CALL_MAX_USDC` (1.00), `DAILY_CAP_USDC` (code default 2.00; the live deployment uses 3.00), `BUDGET_TIME_ZONE` (America/Chicago), `ALLOWED_PAYEES` (optional) |
 | Assistant | `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` |
 | Voice | `ELEVENLABS_API_KEY`, `ELEVENLABS_AGENT_ID`, `ELEVENLABS_API_BASE` |
 | Chain | `GATEWAY_API_URL`, `ARC_RPC_URL`, `QN_STREAM_SECURITY_TOKEN` |
@@ -190,7 +190,7 @@ On `#/demo`, enter the demo access code, then:
 5. **Rules → Freeze all spending** (operator code) → the banner appears on every view and purchases are refused → **Unfreeze**.
 6. **Payments → Onchain activity** → the agent wallet's Gateway deposit, as delivered by QuickNode Streams.
 
-A full run commits about 0.78 USDC of the 2.00 USDC daily cap, which resets at midnight America/Chicago. Check [BACKEND_STATUS.md](docs/BACKEND_STATUS.md) for today's remaining budget and whether spending is frozen before recording.
+A full run commits about 0.78 USDC of the 3.00 USDC daily cap, which resets at midnight America/Chicago. Check [BACKEND_STATUS.md](docs/BACKEND_STATUS.md) for today's remaining budget and whether spending is frozen before recording.
 
 ## Verified live (2026-11-20, 17:05–17:10 UTC, spending frozen)
 
@@ -201,7 +201,7 @@ A full run commits about 0.78 USDC of the 2.00 USDC daily cap, which resets at m
 - demo-code login (`POST /api/sessions` with the Netlify origin) returns an agent session;
 - with that session:
   - a real Claude (`claude-sonnet-5-5`) conversation that remembered a name and a market across turns;
-  - the budget shows frozen, 1.53 of 2.00 USDC used;
+  - the budget shows frozen, 1.53 of 2.00 USDC used (the cap at that time; it was raised to 3.00 at 17:18 UTC);
   - the ledger lists the real settled, blocked and declined purchases;
   - no purchase was made.
 
