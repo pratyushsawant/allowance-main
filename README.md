@@ -10,10 +10,13 @@ UBC 2026 hackathon entry (Agentic Payments and AI track), built on Gemini Predic
 
 **Testnet only.** All money is testnet USDC. No secret belongs in this repository or in the frontend build.
 
+[![Allowance demo video](https://img.youtube.com/vi/b4DCkSpXMfM/hqdefault.jpg)](https://youtu.be/b4DCkSpXMfM)
+
 ## Submission links
 
 | What | Link |
 |---|---|
+| Demo video | **https://youtu.be/b4DCkSpXMfM** |
 | Live demo (Netlify) | **https://allowance-ubc-2026.netlify.app**: the demo is at [`/#/demo`](https://allowance-ubc-2026.netlify.app/#/demo) |
 | Source | https://github.com/pratyushsawant/allowance-main |
 | Arc Testnet explorer | https://explorer.testnet.arc.io |
