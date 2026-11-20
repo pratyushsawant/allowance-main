@@ -225,7 +225,7 @@ export function RulesExplainer({
         ) : (
           <div className="rounded-[22px] border border-line bg-surface p-7 text-[15px] text-ink-soft">
             The live rules load after you connect: open the demo and enter the access code. Defaults on the backend: pay only allowlisted sellers,
-            at most 1.00 USDC per request and 3.00 USDC a day, and ask a person before anything over 0.25 USDC.
+            at most 1.00 USDC per request and 5.00 USDC a day, and ask a person before anything over 0.25 USDC.
           </div>
         )}
       </div>

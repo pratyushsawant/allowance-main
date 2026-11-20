@@ -190,7 +190,7 @@ function Screen({ step }: { step: number }) {
       <div className="w-full rounded-2xl bg-surface p-4">
         <p className="text-[13px] font-semibold">Checking 0.005 USDC</p>
         <ul className="mt-3 space-y-2.5">
-          {["Odds Desk is on your list", "Under 1.00 USDC per request", "Fits today's 3.00 USDC budget", "Under your 0.25 USDC ask-me limit"].map((r, i) => (
+          {["Odds Desk is on your list", "Under 1.00 USDC per request", "Fits today's 5.00 USDC budget", "Under your 0.25 USDC ask-me limit"].map((r, i) => (
             <li key={r} className="check-in flex items-center gap-2.5 text-[12.5px]" style={{ animationDelay: `${200 + i * 350}ms` }}>
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pine text-white">
                 <Check size={12} strokeWidth={3} />
