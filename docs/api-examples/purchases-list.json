@@ -1,0 +1,411 @@
+{
+  "_provenance": {
+    "capturedAt": "2026-11-20T13:12:27.987Z",
+    "source": "live",
+    "service": "https://allowance-backend-production.up.railway.app",
+    "note": "Captured from the deployed service. The capture used a backend credential; a frontend sends its agent SESSION token in the same header and gets the same response. Re-captured after deploy 315e6c55 (percent format and catalog text). Contains every live purchase so far. The settled deep_brief keeps the result it was delivered with (whole-number percentages, bought before this deploy); its summary is read from that stored result."
+  },
+  "request": {
+    "method": "GET",
+    "path": "/api/purchases?limit=10",
+    "headers": {
+      "authorization": "Bearer <agent session token>"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "purchases": [
+        {
+          "id": "7ddb7cf0-ef9e-4166-b609-ccfedf419cbc",
+          "item": "deep_brief",
+          "seller": "odds-desk",
+          "state": "settled",
+          "priceUsdc": "0.75",
+          "amount": "750000",
+          "reason": "Settled onchain",
+          "next": "Paid and settled onchain. Use `summary`, or `result` for details.",
+          "summary": "Minnesota vs Oklahoma State: Minnesota leads at about 52%; no change since 4:44 AM. Related: Kansas vs Houston, Houston about 97%; Auburn vs Notre Dame, Notre Dame about 85%.",
+          "payTo": "0x3b53b70d0275e5b2f8a3DFe6Cb0d949B3D7Ea14e",
+          "nonce": "0x306a896bbbc7427fec2b0570e5d34535072e34910c1d12e3eecfe1a7b1f6bce0",
+          "gatewayTransferId": "a2c61405-87b1-439c-bd75-441850dbd86b",
+          "settlementTx": "0xa08d1c7ba089260c0e53232d7b0fa77f6b04aafe7b5d7db22a5b3ea90d71a9ca",
+          "approvalExpiresAt": 1795179495080,
+          "createdAt": 1795178895080,
+          "updatedAt": 1795179685603,
+          "result": {
+            "mock": false,
+            "note": "Computed only from recorded Gemini prices. Movement is reported only where analysis.status / contracts[].history.status is \"ok\"; otherwise the reason is given and movement fields are null.",
+            "generatedAt": 1795178911137,
+            "method": {
+              "impliedProbability": "midpoint of best bid and best ask (USD per contract)",
+              "minObservations": 2,
+              "minHistoryMinutes": 15,
+              "maxPollGapMinutes": 10
+            },
+            "coverage": {
+              "recordedSince": 1795171442320,
+              "recordedUntil": 1795178855964
+            },
+            "event": {
+              "ticker": "NCAAM-2611201730-MINN-OKST-M",
+              "title": "Minnesota vs Oklahoma State",
+              "category": "Sports",
+              "volume24h": "1204.67",
+              "expiryDate": "2026-11-22T17:30:00.000Z",
+              "lastSeenAt": 1795178851146,
+              "contracts": [
+                {
+                  "instrumentSymbol": "GEMI-NCAAM-2611201730-MINN-OKST-M-MINN",
+                  "label": "Minnesota",
+                  "bestBid": "0.51",
+                  "bestAsk": "0.52",
+                  "lastTradePrice": null,
+                  "observedAt": 1795178851146
+                },
+                {
+                  "instrumentSymbol": "GEMI-NCAAM-2611201730-MINN-OKST-M-OKST",
+                  "label": "Oklahoma State",
+                  "bestBid": "0.48",
+                  "bestAsk": "0.49",
+                  "lastTradePrice": "0.53",
+                  "observedAt": 1795178851146
+                }
+              ]
+            },
+            "analysis": {
+              "ticker": "NCAAM-2611201730-MINN-OKST-M",
+              "title": "Minnesota vs Oklahoma State",
+              "category": "Sports",
+              "status": "ok",
+              "leader": {
+                "label": "Minnesota",
+                "impliedProbability": "52%"
+              },
+              "probabilitiesSum": "100%",
+              "widestSpread": {
+                "label": "Minnesota",
+                "spread": "0.01"
+              },
+              "biggestMove": null,
+              "contracts": [
+                {
+                  "label": "Minnesota",
+                  "instrumentSymbol": "GEMI-NCAAM-2611201730-MINN-OKST-M-MINN",
+                  "current": {
+                    "bestBid": "0.51",
+                    "bestAsk": "0.52",
+                    "lastTradePrice": null,
+                    "mid": "0.515",
+                    "impliedProbability": "52%",
+                    "spread": "0.01",
+                    "observedAt": 1795178851146
+                  },
+                  "history": {
+                    "status": "ok",
+                    "observations": 9,
+                    "firstObservedAt": 1795171442320,
+                    "lastObservedAt": 1795178851146,
+                    "windowMinutes": 123,
+                    "reason": null,
+                    "firstMid": "0.515",
+                    "change": "0",
+                    "changePoints": "0",
+                    "high": "0.515",
+                    "low": "0.515"
+                  }
+                },
+                {
+                  "label": "Oklahoma State",
+                  "instrumentSymbol": "GEMI-NCAAM-2611201730-MINN-OKST-M-OKST",
+                  "current": {
+                    "bestBid": "0.48",
+                    "bestAsk": "0.49",
+                    "lastTradePrice": "0.53",
+                    "mid": "0.485",
+                    "impliedProbability": "49%",
+                    "spread": "0.01",
+                    "observedAt": 1795178851146
+                  },
+                  "history": {
+                    "status": "ok",
+                    "observations": 9,
+                    "firstObservedAt": 1795171442320,
+                    "lastObservedAt": 1795178851146,
+                    "windowMinutes": 123,
+                    "reason": null,
+                    "firstMid": "0.485",
+                    "change": "0",
+                    "changePoints": "0",
+                    "high": "0.485",
+                    "low": "0.485"
+                  }
+                }
+              ],
+              "notes": [
+                "1 recorder poll(s) failed in this window."
+              ]
+            },
+            "relatedMarkets": [
+              {
+                "ticker": "NCAAM-2611200400-KU-HOU-M",
+                "title": "Kansas vs Houston",
+                "category": "Sports",
+                "volume24h": "13872.31",
+                "expiryDate": "2026-11-22T04:00:00.000Z",
+                "lastSeenAt": 1795178851146,
+                "contracts": [
+                  {
+                    "instrumentSymbol": "GEMI-NCAAM-2611200400-KU-HOU-M-HOU",
+                    "label": "Houston",
+                    "bestBid": null,
+                    "bestAsk": null,
+                    "lastTradePrice": "0.97",
+                    "observedAt": 1795178851146
+                  },
+                  {
+                    "instrumentSymbol": "GEMI-NCAAM-2611200400-KU-HOU-M-KU",
+                    "label": "Kansas",
+                    "bestBid": null,
+                    "bestAsk": "0.06",
+                    "lastTradePrice": "0.18",
+                    "observedAt": 1795178851146
+                  }
+                ]
+              },
+              {
+                "ticker": "NCAAM-2611192200-AUB-ND-M",
+                "title": "Auburn vs Notre Dame",
+                "category": "Sports",
+                "volume24h": "12307.43",
+                "expiryDate": "2026-11-21T22:00:00.000Z",
+                "lastSeenAt": 1795178851146,
+                "contracts": [
+                  {
+                    "instrumentSymbol": "GEMI-NCAAM-2611192200-AUB-ND-M-AUB",
+                    "label": "Auburn",
+                    "bestBid": null,
+                    "bestAsk": "0.05",
+                    "lastTradePrice": "0.05",
+                    "observedAt": 1795178851146
+                  },
+                  {
+                    "instrumentSymbol": "GEMI-NCAAM-2611192200-AUB-ND-M-ND",
+                    "label": "Notre Dame",
+                    "bestBid": "0.85",
+                    "bestAsk": null,
+                    "lastTradePrice": "0.85",
+                    "observedAt": 1795178333490
+                  }
+                ]
+              },
+              {
+                "ticker": "NCAAM-2611210000-OAK-PUR-M",
+                "title": "Oakland vs Purdue",
+                "category": "Sports",
+                "volume24h": "627.93",
+                "expiryDate": "2026-11-23T00:00:00.000Z",
+                "lastSeenAt": 1795178851146,
+                "contracts": [
+                  {
+                    "instrumentSymbol": "GEMI-NCAAM-2611210000-OAK-PUR-M-OAK",
+                    "label": "Oakland",
+                    "bestBid": "0.02",
+                    "bestAsk": "0.03",
+                    "lastTradePrice": "0.03",
+                    "observedAt": 1795178851146
+                  },
+                  {
+                    "instrumentSymbol": "GEMI-NCAAM-2611210000-OAK-PUR-M-PUR",
+                    "label": "Purdue",
+                    "bestBid": "0.97",
+                    "bestAsk": "0.98",
+                    "lastTradePrice": "0.98",
+                    "observedAt": 1795178851146
+                  }
+                ]
+              },
+              {
+                "ticker": "NCAAM-2611200130-UNLV-RUT-M",
+                "title": "UNLV vs Rutgers",
+                "category": "Sports",
+                "volume24h": "588.32",
+                "expiryDate": "2026-11-22T01:30:00.000Z",
+                "lastSeenAt": 1795178851146,
+                "contracts": [
+                  {
+                    "instrumentSymbol": "GEMI-NCAAM-2611200130-UNLV-RUT-M-RUT",
+                    "label": "Rutgers",
+                    "bestBid": "0.62",
+                    "bestAsk": null,
+                    "lastTradePrice": "0.62",
+                    "observedAt": 1795178851146
+                  },
+                  {
+                    "instrumentSymbol": "GEMI-NCAAM-2611200130-UNLV-RUT-M-UNLV",
+                    "label": "UNLV",
+                    "bestBid": null,
+                    "bestAsk": null,
+                    "lastTradePrice": null,
+                    "observedAt": 1795178851146
+                  }
+                ]
+              },
+              {
+                "ticker": "NBA-2611220030-POR-NYK-M",
+                "title": "Portland vs New York",
+                "category": "Sports",
+                "volume24h": "484.43",
+                "expiryDate": "2026-11-23T12:30:00.000Z",
+                "lastSeenAt": 1795178851146,
+                "contracts": [
+                  {
+                    "instrumentSymbol": "GEMI-NBA-2611220030-POR-NYK-M-NYK",
+                    "label": "New York",
+                    "bestBid": "0.65",
+                    "bestAsk": "0.67",
+                    "lastTradePrice": "0.65",
+                    "observedAt": 1795178851146
+                  },
+                  {
+                    "instrumentSymbol": "GEMI-NBA-2611220030-POR-NYK-M-POR",
+                    "label": "Portland",
+                    "bestBid": "0.33",
+                    "bestAsk": "0.34",
+                    "lastTradePrice": "0.35",
+                    "observedAt": 1795177985474
+                  }
+                ]
+              }
+            ],
+            "relatedAnalysis": [
+              {
+                "ticker": "NCAAM-2611200400-KU-HOU-M",
+                "title": "Kansas vs Houston",
+                "status": "ok",
+                "leader": {
+                  "label": "Houston",
+                  "impliedProbability": "97%"
+                },
+                "biggestMove": null
+              },
+              {
+                "ticker": "NCAAM-2611192200-AUB-ND-M",
+                "title": "Auburn vs Notre Dame",
+                "status": "ok",
+                "leader": {
+                  "label": "Notre Dame",
+                  "impliedProbability": "85%"
+                },
+                "biggestMove": null
+              },
+              {
+                "ticker": "NCAAM-2611210000-OAK-PUR-M",
+                "title": "Oakland vs Purdue",
+                "status": "ok",
+                "leader": {
+                  "label": "Purdue",
+                  "impliedProbability": "98%"
+                },
+                "biggestMove": null
+              },
+              {
+                "ticker": "NCAAM-2611200130-UNLV-RUT-M",
+                "title": "UNLV vs Rutgers",
+                "status": "ok",
+                "leader": {
+                  "label": "Rutgers",
+                  "impliedProbability": "62%"
+                },
+                "biggestMove": null
+              },
+              {
+                "ticker": "NBA-2611220030-POR-NYK-M",
+                "title": "Portland vs New York",
+                "status": "ok",
+                "leader": {
+                  "label": "New York",
+                  "impliedProbability": "66%"
+                },
+                "biggestMove": null
+              }
+            ]
+          }
+        },
+        {
+          "id": "dbb45808-fd53-4753-947e-1b35c157eded",
+          "item": "deep_brief",
+          "seller": "odds-desk",
+          "state": "declined",
+          "priceUsdc": "0.75",
+          "amount": "750000",
+          "reason": "Declined by a person",
+          "next": "The person declined this purchase. Do not retry.",
+          "summary": null,
+          "payTo": "0x3b53b70d0275e5b2f8a3DFe6Cb0d949B3D7Ea14e",
+          "nonce": null,
+          "gatewayTransferId": null,
+          "settlementTx": null,
+          "approvalExpiresAt": 1795172082175,
+          "createdAt": 1795171482175,
+          "updatedAt": 1795171482497
+        },
+        {
+          "id": "3f005eb4-bf94-451f-9678-5adf1c4d9ec2",
+          "item": "odds_snapshot",
+          "seller": "odds-desk",
+          "state": "settled",
+          "priceUsdc": "0.005",
+          "amount": "5000",
+          "reason": "Settled onchain",
+          "next": "Paid and settled onchain. Use `summary`, or `result` for details.",
+          "summary": "Minnesota vs Oklahoma State: Minnesota about 51.5%, Oklahoma State about 48.5%. These are implied probabilities from the bid/ask midpoint.",
+          "payTo": "0x3b53b70d0275e5b2f8a3DFe6Cb0d949B3D7Ea14e",
+          "nonce": "0xc6f155a616116f83dacb865d0e422e6567c66bda331d5164dfcc20cb9699257d",
+          "gatewayTransferId": "2246652d-c545-49c0-9b8a-bd3aa0e2328b",
+          "settlementTx": "0xe56d38d8d7f697ae789e8a5eefd54694a66df8bcd14297e95816b76b27ccdf8c",
+          "approvalExpiresAt": null,
+          "createdAt": 1795171481797,
+          "updatedAt": 1795172044918,
+          "result": {
+            "event": {
+              "ticker": "NCAAM-2611201730-MINN-OKST-M",
+              "title": "Minnesota vs Oklahoma State",
+              "category": "Sports",
+              "volume24h": "1204.67",
+              "expiryDate": "2026-11-22T17:30:00.000Z",
+              "lastSeenAt": 1795171442320,
+              "contracts": [
+                {
+                  "instrumentSymbol": "GEMI-NCAAM-2611201730-MINN-OKST-M-MINN",
+                  "label": "Minnesota",
+                  "bestBid": "0.51",
+                  "bestAsk": "0.52",
+                  "lastTradePrice": null,
+                  "observedAt": 1795171442320
+                },
+                {
+                  "instrumentSymbol": "GEMI-NCAAM-2611201730-MINN-OKST-M-OKST",
+                  "label": "Oklahoma State",
+                  "bestBid": "0.48",
+                  "bestAsk": "0.49",
+                  "lastTradePrice": "0.53",
+                  "observedAt": 1795171442320
+                }
+              ]
+            },
+            "related": {
+              "item": "full_report",
+              "seller": "shady-reports",
+              "priceUsdc": "0.01",
+              "note": "A full report on this event is available from Shady Reports."
+            }
+          }
+        }
+      ]
+    }
+  }
+}

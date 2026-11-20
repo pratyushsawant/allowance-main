@@ -1,0 +1,39 @@
+{
+  "_provenance": {
+    "capturedAt": "2026-11-20T12:16:06.673Z",
+    "source": "live",
+    "service": "https://allowance-backend-production.up.railway.app",
+    "note": "Captured from the deployed service. The capture used a backend credential; a frontend sends its agent SESSION token in the same header and gets the same response. Real testnet purchase."
+  },
+  "request": {
+    "method": "GET",
+    "path": "/api/purchases/dbb45808-fd53-4753-947e-1b35c157eded",
+    "headers": {
+      "authorization": "Bearer <agent session token>"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "id": "dbb45808-fd53-4753-947e-1b35c157eded",
+      "item": "deep_brief",
+      "seller": "odds-desk",
+      "state": "declined",
+      "priceUsdc": "0.75",
+      "amount": "750000",
+      "reason": "Declined by a person",
+      "next": "The person declined this purchase. Do not retry.",
+      "summary": null,
+      "payTo": "0x3b53b70d0275e5b2f8a3DFe6Cb0d949B3D7Ea14e",
+      "nonce": null,
+      "gatewayTransferId": null,
+      "settlementTx": null,
+      "approvalExpiresAt": 1795172082175,
+      "createdAt": 1795171482175,
+      "updatedAt": 1795171482497
+    }
+  }
+}

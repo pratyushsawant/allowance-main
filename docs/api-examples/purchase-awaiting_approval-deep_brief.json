@@ -1,0 +1,44 @@
+{
+  "_provenance": {
+    "capturedAt": "2026-11-20T12:16:06.673Z",
+    "source": "shape",
+    "note": "Produced by the real API code on an in-memory database with throwaway credentials. Same response the live service gives at request time (verified live in voice:smoke). The quote is stubbed: no seller or payment involved."
+  },
+  "request": {
+    "method": "POST",
+    "path": "/api/purchases",
+    "headers": {
+      "authorization": "Bearer <agent session token>",
+      "content-type": "application/json"
+    },
+    "body": {
+      "item": "deep_brief",
+      "ticker": "NCAAM-2611201730-MINN-OKST-M",
+      "idempotencyKey": "4f1c2a9e-example-key"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "id": "38a0ddb1-f7a2-4888-8245-e16205e528f0",
+      "item": "deep_brief",
+      "seller": "odds-desk",
+      "state": "awaiting_approval",
+      "priceUsdc": "0.75",
+      "amount": "750000",
+      "reason": "$0.75 is over the $0.25 auto-approve limit",
+      "next": "Tell the person the price and ask them to approve it in the app. When the app says it was approved, call get_purchase.",
+      "summary": null,
+      "payTo": "0x3b53b70d0275e5b2f8a3DFe6Cb0d949B3D7Ea14e",
+      "nonce": null,
+      "gatewayTransferId": null,
+      "settlementTx": null,
+      "approvalExpiresAt": 1795177570736,
+      "createdAt": 1795176970736,
+      "updatedAt": 1795176970736
+    }
+  }
+}

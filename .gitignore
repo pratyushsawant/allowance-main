@@ -1,0 +1,23 @@
+# --- Secrets: never commit ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Dependencies / build output ---
+node_modules/
+dist/
+
+# --- Local data and run logs ---
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite-journal
+backend/data/
+backend/.smoke/
+
+# --- OS noise ---
+.DS_Store

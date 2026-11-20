@@ -1,0 +1,40 @@
+{
+  "_provenance": {
+    "capturedAt": "2026-11-20T12:16:06.673Z",
+    "source": "live",
+    "service": "https://allowance-backend-production.up.railway.app",
+    "note": "Captured from the deployed service. The capture used a backend credential; a frontend sends its agent SESSION token in the same header and gets the same response. Amount fields are strings of USDC base units (6 decimals); *Usdc fields are decimal strings."
+  },
+  "request": {
+    "method": "GET",
+    "path": "/api/budget",
+    "headers": {
+      "authorization": "Bearer <agent session token>"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "day": "2026-11-20",
+      "timeZone": "America/Chicago",
+      "frozen": false,
+      "frozenReason": null,
+      "dailyCap": "2000000",
+      "committedToday": "5000",
+      "remainingToday": "1995000",
+      "autoApproveMax": "250000",
+      "perCallMax": "1000000",
+      "gatewayAvailable": "2705000",
+      "availableFunds": "2705000",
+      "dailyCapUsdc": "2",
+      "committedTodayUsdc": "0.005",
+      "remainingTodayUsdc": "1.995",
+      "autoApproveMaxUsdc": "0.25",
+      "perCallMaxUsdc": "1",
+      "availableFundsUsdc": "2.705"
+    }
+  }
+}

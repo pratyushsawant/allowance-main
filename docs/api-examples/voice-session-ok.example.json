@@ -1,0 +1,56 @@
+{
+  "_provenance": {
+    "capturedAt": "2026-11-20T12:16:06.673Z",
+    "source": "shape",
+    "note": "Produced by the real API code on an in-memory database with throwaway credentials. UNVERIFIED against real ElevenLabs: upstream is stubbed. Field names follow the verified ElevenLabs API docs and our tests. Live service currently returns 503 (see voice-session-not-configured.json)."
+  },
+  "examples": [
+    {
+      "title": "WebRTC (voice)",
+      "request": {
+        "method": "POST",
+        "path": "/api/voice/session",
+        "headers": {
+          "authorization": "Bearer <agent session token>",
+          "content-type": "application/json"
+        },
+        "body": {}
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "transport": "webrtc",
+          "conversationToken": "<redacted ElevenLabs conversation token>",
+          "conversationId": "conv_example"
+        }
+      }
+    },
+    {
+      "title": "WebSocket (text-only)",
+      "request": {
+        "method": "POST",
+        "path": "/api/voice/session",
+        "headers": {
+          "authorization": "Bearer <agent session token>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "transport": "websocket"
+        }
+      },
+      "response": {
+        "status": 502,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "transport": "websocket",
+          "signedUrl": "<redacted signed wss URL>"
+        }
+      }
+    }
+  ]
+}

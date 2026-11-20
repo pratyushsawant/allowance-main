@@ -1,0 +1,29 @@
+{
+  "_provenance": {
+    "capturedAt": "2026-11-20T12:16:06.673Z",
+    "source": "local-dev",
+    "note": "Approving a purchase that is not awaiting approval (no state change)."
+  },
+  "examples": [
+    {
+      "title": "Approve a settled purchase",
+      "request": {
+        "method": "POST",
+        "path": "/api/purchases/121c57aa-a109-4e2e-92e0-fb3ffe4b7e02/approve",
+        "headers": {
+          "authorization": "Bearer <operator session token>"
+        }
+      },
+      "response": {
+        "status": 409,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "error": "invalid_state",
+          "message": "Purchase is settled, not awaiting approval"
+        }
+      }
+    }
+  ]
+}

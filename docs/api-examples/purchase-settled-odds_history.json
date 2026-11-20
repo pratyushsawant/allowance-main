@@ -1,0 +1,75 @@
+{
+  "_provenance": {
+    "capturedAt": "2026-11-20T12:16:06.673Z",
+    "source": "local-dev",
+    "note": "Real testnet purchase made earlier on 2026-11-20 by the local service, read through the same API code. Points trimmed to the last 5 per contract."
+  },
+  "request": {
+    "method": "GET",
+    "path": "/api/purchases/fcdb06e6-53cf-46e0-b5aa-616625a687f2",
+    "headers": {
+      "authorization": "Bearer <agent session token>"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "id": "fcdb06e6-53cf-46e0-b5aa-616625a687f2",
+      "item": "odds_history",
+      "seller": "odds-desk",
+      "state": "settled",
+      "priceUsdc": "0.02",
+      "amount": "20000",
+      "reason": "Settled onchain",
+      "next": "Paid and settled onchain. Use `summary`, or `result` for details.",
+      "summary": "Minnesota vs Oklahoma State: no price changes recorded since 3:49 AM.",
+      "payTo": "0x3b53b70d0275e5b2f8a3DFe6Cb0d949B3D7Ea14e",
+      "nonce": "0x7223e87ad96c7cc68661c92961f87de1780f1954f53a25f4a1bc62b66a08df6e",
+      "gatewayTransferId": "7933aa4d-7fc2-4146-8e48-466fbe304f6c",
+      "settlementTx": "0x8c6314526ce6f78d37508564436ff9ce6d5ced9c4fb5522e6e8f6f8969f11081",
+      "approvalExpiresAt": null,
+      "createdAt": 1795168844885,
+      "updatedAt": 1795169192579,
+      "result": {
+        "ticker": "NCAAM-2611201730-MINN-OKST-M",
+        "title": "Minnesota vs Oklahoma State",
+        "recordedSince": 1795168197336,
+        "recordedUntil": 1795168816270,
+        "contracts": [
+          {
+            "label": "Minnesota",
+            "instrumentSymbol": "GEMI-NCAAM-2611201730-MINN-OKST-M-MINN",
+            "points": [
+              {
+                "at": 1795168197336,
+                "bestBid": "0.51",
+                "bestAsk": "0.52",
+                "lastTradePrice": null
+              }
+            ],
+            "bidChange": "0",
+            "_trimmed": "points: last 5 of 1"
+          },
+          {
+            "label": "Oklahoma State",
+            "instrumentSymbol": "GEMI-NCAAM-2611201730-MINN-OKST-M-OKST",
+            "points": [
+              {
+                "at": 1795168197336,
+                "bestBid": "0.48",
+                "bestAsk": "0.49",
+                "lastTradePrice": "0.53"
+              }
+            ],
+            "bidChange": "0",
+            "_trimmed": "points: last 5 of 1"
+          }
+        ],
+        "biggestMovers": []
+      }
+    }
+  }
+}

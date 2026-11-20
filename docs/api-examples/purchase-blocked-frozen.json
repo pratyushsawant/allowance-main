@@ -1,0 +1,38 @@
+{
+  "_provenance": {
+    "capturedAt": "2026-11-20T12:16:06.673Z",
+    "source": "local-dev",
+    "note": "Real testnet purchase made earlier on 2026-11-20 by the local service, read through the same API code. Blocked because spending was frozen; nothing signed."
+  },
+  "request": {
+    "method": "GET",
+    "path": "/api/purchases/95ef2135-d061-41db-866d-3fd08c630970",
+    "headers": {
+      "authorization": "Bearer <agent session token>"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "id": "95ef2135-d061-41db-866d-3fd08c630970",
+      "item": "odds_snapshot",
+      "seller": "odds-desk",
+      "state": "blocked",
+      "priceUsdc": "0.005",
+      "amount": "5000",
+      "reason": "Spending is frozen: api smoke test",
+      "next": "Do not retry. Tell the person why it was blocked.",
+      "summary": null,
+      "payTo": "0x3b53b70d0275e5b2f8a3DFe6Cb0d949B3D7Ea14e",
+      "nonce": null,
+      "gatewayTransferId": null,
+      "settlementTx": null,
+      "approvalExpiresAt": null,
+      "createdAt": 1795168845635,
+      "updatedAt": 1795168845635
+    }
+  }
+}

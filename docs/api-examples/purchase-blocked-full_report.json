@@ -1,0 +1,38 @@
+{
+  "_provenance": {
+    "capturedAt": "2026-11-20T12:16:06.673Z",
+    "source": "local-dev",
+    "note": "Real testnet purchase made earlier on 2026-11-20 by the local service, read through the same API code. Blocked by the payee allowlist; nothing signed."
+  },
+  "request": {
+    "method": "GET",
+    "path": "/api/purchases/cdd72444-6d4d-46a8-86a4-05bfedaa3e91",
+    "headers": {
+      "authorization": "Bearer <agent session token>"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "id": "cdd72444-6d4d-46a8-86a4-05bfedaa3e91",
+      "item": "full_report",
+      "seller": "shady-reports",
+      "state": "blocked",
+      "priceUsdc": "0.01",
+      "amount": "10000",
+      "reason": "Seller 0xc0018D576887922BC9Cbc4C40B2cfB4d40Fc6329 is not on the allowlist",
+      "next": "Do not retry. Tell the person why it was blocked.",
+      "summary": null,
+      "payTo": "0xc0018D576887922BC9Cbc4C40B2cfB4d40Fc6329",
+      "nonce": null,
+      "gatewayTransferId": null,
+      "settlementTx": null,
+      "approvalExpiresAt": null,
+      "createdAt": 1795168845517,
+      "updatedAt": 1795168845517
+    }
+  }
+}

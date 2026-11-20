@@ -1,0 +1,38 @@
+{
+  "_provenance": {
+    "capturedAt": "2026-11-20T12:16:06.673Z",
+    "source": "local-dev",
+    "note": "Real testnet purchase made earlier on 2026-11-20 by the local service, read through the same API code. Blocked because Gateway funds were below the price; nothing signed."
+  },
+  "request": {
+    "method": "GET",
+    "path": "/api/purchases/01ae3c9a-805b-43ba-8d9b-46b2deb70a63",
+    "headers": {
+      "authorization": "Bearer <agent session token>"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "id": "01ae3c9a-805b-43ba-8d9b-46b2deb70a63",
+      "item": "deep_brief",
+      "seller": "odds-desk",
+      "state": "blocked",
+      "priceUsdc": "0.75",
+      "amount": "750000",
+      "reason": "$0.75 is more than the $0.215 available",
+      "next": "Do not retry. Tell the person why it was blocked.",
+      "summary": null,
+      "payTo": "0x3b53b70d0275e5b2f8a3DFe6Cb0d949B3D7Ea14e",
+      "nonce": null,
+      "gatewayTransferId": null,
+      "settlementTx": null,
+      "approvalExpiresAt": null,
+      "createdAt": 1795170172540,
+      "updatedAt": 1795170172540
+    }
+  }
+}

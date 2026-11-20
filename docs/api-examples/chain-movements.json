@@ -1,0 +1,37 @@
+{
+  "_provenance": {
+    "capturedAt": "2026-11-20T12:16:06.673Z",
+    "source": "live",
+    "service": "https://allowance-backend-production.up.railway.app",
+    "note": "Captured from the deployed service. The capture used a backend credential; a frontend sends its agent SESSION token in the same header and gets the same response. Real Quicknode delivery of a real 0.5 USDC Gateway deposit."
+  },
+  "request": {
+    "method": "GET",
+    "path": "/api/chain/movements",
+    "headers": {
+      "authorization": "Bearer <agent session token>"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "movements": [
+        {
+          "canonicalId": "5042002:0x9e9926e24505513b1f85ce3793a4aa08b55e3f14e650a61dcd4244756a3a6239:7",
+          "block": 73182200,
+          "txHash": "0x9e9926e24505513b1f85ce3793a4aa08b55e3f14e650a61dcd4244756a3a6239",
+          "logIndex": 7,
+          "from": "0xe5edec99dcf041e022e7a843d00b37fb49d08fbd",
+          "to": "0x0077777d7eba4688bdef3e311b846f25870a19b9",
+          "amountUsdc": "0.5",
+          "classification": "gateway_deposit",
+          "observedAt": 1795176308747,
+          "explorer": "https://explorer.testnet.arc.io/tx/0x9e9926e24505513b1f85ce3793a4aa08b55e3f14e650a61dcd4244756a3a6239"
+        }
+      ]
+    }
+  }
+}

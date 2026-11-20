@@ -1,0 +1,59 @@
+{
+  "_provenance": {
+    "capturedAt": "2026-11-20T12:16:06.673Z",
+    "source": "shape",
+    "note": "Produced by the real API code on an in-memory database with throwaway credentials. Tokens and access codes are redacted. Live login was verified in voice:smoke (agent 2 h, operator 1 h)."
+  },
+  "examples": [
+    {
+      "title": "Agent session",
+      "request": {
+        "method": "POST",
+        "path": "/api/sessions",
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "scope": "agent",
+          "accessCode": "<DEMO_ACCESS_CODE typed by the person>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "token": "as1.<redacted>.<redacted>",
+          "scope": "agent",
+          "expiresAt": 1795184170000
+        }
+      }
+    },
+    {
+      "title": "Operator session",
+      "request": {
+        "method": "POST",
+        "path": "/api/sessions",
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "scope": "operator",
+          "accessCode": "<OPERATOR_ACCESS_CODE typed by the person>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "token": "as1.<redacted>.<redacted>",
+          "scope": "operator",
+          "expiresAt": 1795180570000
+        }
+      }
+    }
+  ]
+}

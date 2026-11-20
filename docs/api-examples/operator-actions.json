@@ -1,0 +1,121 @@
+{
+  "_provenance": {
+    "capturedAt": "2026-11-20T12:16:06.673Z",
+    "source": "shape",
+    "note": "Produced by the real API code on an in-memory database with throwaway credentials. Operator routes need an OPERATOR session."
+  },
+  "examples": [
+    {
+      "title": "Freeze",
+      "request": {
+        "method": "POST",
+        "path": "/api/policy/freeze",
+        "headers": {
+          "authorization": "Bearer <operator session token>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "reason": "Paused by operator"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "frozen": true,
+          "reason": "Paused by operator"
+        }
+      }
+    },
+    {
+      "title": "Unfreeze",
+      "request": {
+        "method": "POST",
+        "path": "/api/policy/unfreeze",
+        "headers": {
+          "authorization": "Bearer <operator session token>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "frozen": false
+        }
+      }
+    },
+    {
+      "title": "Approve (stub buyer)",
+      "request": {
+        "method": "POST",
+        "path": "/api/purchases/38a0ddb1-f7a2-4888-8245-e16205e528f0/approve",
+        "headers": {
+          "authorization": "Bearer <operator session token>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "id": "38a0ddb1-f7a2-4888-8245-e16205e528f0",
+          "item": "deep_brief",
+          "seller": "odds-desk",
+          "state": "reserved",
+          "priceUsdc": "0.75",
+          "amount": "750000",
+          "reason": "Approved by a person",
+          "next": null,
+          "summary": null,
+          "payTo": "0x3b53b70d0275e5b2f8a3DFe6Cb0d949B3D7Ea14e",
+          "nonce": null,
+          "gatewayTransferId": null,
+          "settlementTx": null,
+          "approvalExpiresAt": 1795177570736,
+          "createdAt": 1795176970736,
+          "updatedAt": 1795176970742
+        }
+      },
+      "_note": "Shape run uses a stub buyer, so the approved purchase stops at 'reserved'. On the live service the buyer then pays and the response is 'accepted' (see purchase-settled-odds_snapshot.json for a paid view)."
+    },
+    {
+      "title": "Decline",
+      "request": {
+        "method": "POST",
+        "path": "/api/purchases/a433c51f-11d1-4b03-abd5-316a3049e916/decline",
+        "headers": {
+          "authorization": "Bearer <operator session token>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "id": "a433c51f-11d1-4b03-abd5-316a3049e916",
+          "item": "deep_brief",
+          "seller": "odds-desk",
+          "state": "declined",
+          "priceUsdc": "0.75",
+          "amount": "750000",
+          "reason": "Declined by a person",
+          "next": "The person declined this purchase. Do not retry.",
+          "summary": null,
+          "payTo": "0x3b53b70d0275e5b2f8a3DFe6Cb0d949B3D7Ea14e",
+          "nonce": null,
+          "gatewayTransferId": null,
+          "settlementTx": null,
+          "approvalExpiresAt": 1795177570743,
+          "createdAt": 1795176970743,
+          "updatedAt": 1795176970744
+        }
+      }
+    }
+  ]
+}

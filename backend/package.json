@@ -1,0 +1,38 @@
+{
+  "name": "allowance-backend",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Allowance backend. Phase 0: Circle Gateway nanopayment smoke test on Arc Testnet.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --test src/*.test.ts",
+    "keys:generate": "node scripts/generate-keys.ts",
+    "recorder": "node --env-file-if-exists=.env scripts/recorder.ts",
+    "start": "node --env-file=.env src/server.ts",
+    "api:smoke": "node --env-file=.env scripts/api-smoke.ts",
+    "voice:smoke": "node --env-file=.env scripts/voice-smoke.ts",
+    "streams:filter": "node --env-file=.env scripts/streams-filter.ts",
+    "streams:simulate": "node --env-file=.env scripts/streams-simulate.ts",
+    "smoke:balance": "node --env-file=.env scripts/balance.ts",
+    "smoke:deposit": "node --env-file=.env scripts/deposit.ts",
+    "smoke:seller": "node --env-file=.env scripts/seller.ts",
+    "smoke:buy": "node --env-file=.env scripts/buy.ts",
+    "smoke:status": "node --env-file=.env scripts/transfer-status.ts"
+  },
+  "dependencies": {
+    "@circle-fin/x402-batching": "4.0.0",
+    "@x402/core": "2.30.0",
+    "@x402/evm": "2.30.0",
+    "better-sqlite3": "13.0.3",
+    "viem": "2.57.16"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "9.6.0",
+    "@types/node": "22.20.5",
+    "typescript": "5.9.3"
+  }
+}

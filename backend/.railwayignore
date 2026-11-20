@@ -1,0 +1,9 @@
+# Never upload secrets or local state to Railway (railway up honors this file and .gitignore).
+.env
+.env.*
+!.env.example
+node_modules
+data
+.smoke
+*.db
+*.db-*

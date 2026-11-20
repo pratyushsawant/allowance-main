@@ -1,0 +1,15 @@
+# Never send secrets or local state into the image build context.
+.env
+.env.*
+!.env.example
+node_modules
+data
+.smoke
+*.db
+*.db-*
+# Not needed at runtime
+scripts
+streams
+voice
+*.test.ts
+README.md

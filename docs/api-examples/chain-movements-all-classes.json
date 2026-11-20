@@ -1,0 +1,72 @@
+{
+  "_provenance": {
+    "capturedAt": "2026-11-20T12:16:06.673Z",
+    "source": "local-dev",
+    "note": "Local dev database. Real top-up/deposits plus one clearly labeled SYNTHETIC anomaly row."
+  },
+  "request": {
+    "method": "GET",
+    "path": "/api/chain/movements",
+    "headers": {
+      "authorization": "Bearer <agent session token>"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "movements": [
+        {
+          "canonicalId": "5042002:0x754635df6dfc6b4cff7cbd30b2c49e8b69fe453bb82177d258b226d0edf16022:10",
+          "block": 73173107,
+          "txHash": "0x754635df6dfc6b4cff7cbd30b2c49e8b69fe453bb82177d258b226d0edf16022",
+          "logIndex": 10,
+          "from": "0xe5edec99dcf041e022e7a843d00b37fb49d08fbd",
+          "to": "0x0077777d7eba4688bdef3e311b846f25870a19b9",
+          "amountUsdc": "2",
+          "classification": "gateway_deposit",
+          "observedAt": 1795170837851,
+          "_label": "Real Arc Testnet movement (delivered by our signed-delivery simulation)"
+        },
+        {
+          "canonicalId": "5042002:0x3e0c1e01965e569b4ab66d051247bf308dc1aab11d239e2dcac7168c52fa3085:14",
+          "block": 73167978,
+          "txHash": "0x3e0c1e01965e569b4ab66d051247bf308dc1aab11d239e2dcac7168c52fa3085",
+          "logIndex": 14,
+          "from": "0xe5edec99dcf041e022e7a843d00b37fb49d08fbd",
+          "to": "0x0077777d7eba4688bdef3e311b846f25870a19b9",
+          "amountUsdc": "1",
+          "classification": "gateway_deposit",
+          "observedAt": 1795170837851,
+          "_label": "Real Arc Testnet movement (delivered by our signed-delivery simulation)"
+        },
+        {
+          "canonicalId": "5042002:0xd9c7ff5a24afae43c11e4dd4f51d0954c40de9b3799ce990b832e4f687ad5bce:0",
+          "block": 73167868,
+          "txHash": "0xd9c7ff5a24afae43c11e4dd4f51d0954c40de9b3799ce990b832e4f687ad5bce",
+          "logIndex": 0,
+          "from": "0x3c3380cdfb94dfeeaa41cad9f58254ae380d752d",
+          "to": "0xe5edec99dcf041e022e7a843d00b37fb49d08fbd",
+          "amountUsdc": "20",
+          "classification": "top_up",
+          "observedAt": 1795170837851,
+          "_label": "Real Arc Testnet movement (delivered by our signed-delivery simulation)"
+        },
+        {
+          "canonicalId": "5042002:0x36e44f1e41f0918db9beaf591fc7956598e719fee280b45e8624a7d0dfab7562:0",
+          "block": 1,
+          "txHash": "0x36e44f1e41f0918db9beaf591fc7956598e719fee280b45e8624a7d0dfab7562",
+          "logIndex": 0,
+          "from": "0xe5edec99dcf041e022e7a843d00b37fb49d08fbd",
+          "to": "0x9999999999999999999999999999999999999999",
+          "amountUsdc": "1",
+          "classification": "unexpected_outbound",
+          "observedAt": 1795170837854,
+          "_label": "SYNTHETIC test anomaly (never happened onchain); shown only to illustrate unexpected_outbound"
+        }
+      ]
+    }
+  }
+}

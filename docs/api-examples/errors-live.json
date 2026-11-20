@@ -1,0 +1,325 @@
+{
+  "_provenance": {
+    "capturedAt": "2026-11-20T12:16:06.673Z",
+    "source": "live",
+    "service": "https://allowance-backend-production.up.railway.app",
+    "note": "Captured from the deployed service. Each example is a request the API rejects before doing anything; none created a session, a quote or a payment."
+  },
+  "examples": [
+    {
+      "title": "Missing credential",
+      "request": {
+        "method": "GET",
+        "path": "/api/budget",
+        "headers": {}
+      },
+      "response": {
+        "status": 401,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "error": "unauthorized",
+          "message": "This route needs agent access"
+        }
+      }
+    },
+    {
+      "title": "Agent credential on an operator route (no state change)",
+      "request": {
+        "method": "POST",
+        "path": "/api/purchases/dbb45808-fd53-4753-947e-1b35c157eded/approve",
+        "headers": {
+          "authorization": "Bearer <agent session token>"
+        }
+      },
+      "response": {
+        "status": 401,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "error": "unauthorized",
+          "message": "This route needs operator access"
+        }
+      }
+    },
+    {
+      "title": "Query too short",
+      "request": {
+        "method": "GET",
+        "path": "/api/markets/search?q=a",
+        "headers": {
+          "authorization": "Bearer <agent session token>"
+        }
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "error": "invalid_query",
+          "message": "q must be 2 to 80 characters"
+        }
+      }
+    },
+    {
+      "title": "Unknown purchase id",
+      "request": {
+        "method": "GET",
+        "path": "/api/purchases/00000000-0000-0000-0000-000000000000",
+        "headers": {
+          "authorization": "Bearer <agent session token>"
+        }
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "error": "not_found",
+          "message": "No such purchase"
+        }
+      }
+    },
+    {
+      "title": "Unknown route",
+      "request": {
+        "method": "GET",
+        "path": "/api/does-not-exist",
+        "headers": {
+          "authorization": "Bearer <agent session token>"
+        }
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "error": "not_found",
+          "message": "No such route"
+        }
+      }
+    },
+    {
+      "title": "Unknown catalog item (rejected before any quote)",
+      "request": {
+        "method": "POST",
+        "path": "/api/purchases",
+        "headers": {
+          "authorization": "Bearer <agent session token>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "item": "bogus",
+          "ticker": "X",
+          "idempotencyKey": "5f0d9b0e-496e-426a-bb50-40e97ac2c73d"
+        }
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "error": "unknown_item",
+          "message": "item must be one of: odds_snapshot, odds_history, deep_brief, full_report"
+        }
+      }
+    },
+    {
+      "title": "Malformed ticker (rejected before any quote)",
+      "request": {
+        "method": "POST",
+        "path": "/api/purchases",
+        "headers": {
+          "authorization": "Bearer <agent session token>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "item": "odds_snapshot",
+          "ticker": "not a ticker!",
+          "idempotencyKey": "1c1a87f8-d15d-473a-bd57-6e7dcd3b0cec"
+        }
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "error": "invalid_ticker",
+          "message": "ticker is required"
+        }
+      }
+    },
+    {
+      "title": "Bad idempotency key (rejected before any quote)",
+      "request": {
+        "method": "POST",
+        "path": "/api/purchases",
+        "headers": {
+          "authorization": "Bearer <agent session token>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "item": "odds_snapshot",
+          "ticker": "NO-SUCH-EVENT",
+          "idempotencyKey": "short"
+        }
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "error": "invalid_idempotency_key",
+          "message": "idempotencyKey: 8-128 chars of [A-Za-z0-9._:-]"
+        }
+      }
+    },
+    {
+      "title": "Event not recorded (rejected before any quote)",
+      "request": {
+        "method": "POST",
+        "path": "/api/purchases",
+        "headers": {
+          "authorization": "Bearer <agent session token>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "item": "odds_snapshot",
+          "ticker": "NO-SUCH-EVENT-123",
+          "idempotencyKey": "a7dc5dd3-664f-4eda-aefc-baf8e88483a0"
+        }
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "error": "unknown_event",
+          "message": "No recorded event with that ticker"
+        }
+      }
+    },
+    {
+      "title": "Wrong content type",
+      "request": {
+        "method": "POST",
+        "path": "/api/purchases",
+        "headers": {
+          "authorization": "Bearer <agent session token>",
+          "content-type": "text/plain"
+        },
+        "body": "item=odds_snapshot"
+      },
+      "response": {
+        "status": 415,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "error": "unsupported_media_type",
+          "message": "Send application/json"
+        }
+      }
+    },
+    {
+      "title": "Invalid login scope",
+      "request": {
+        "method": "POST",
+        "path": "/api/sessions",
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "scope": "admin",
+          "accessCode": "x"
+        }
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "error": "invalid_scope",
+          "message": "scope must be \"agent\" or \"operator\""
+        }
+      }
+    },
+    {
+      "title": "Wrong access code (counts toward the 10-per-10-min limit)",
+      "request": {
+        "method": "POST",
+        "path": "/api/sessions",
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "scope": "agent",
+          "accessCode": "wrong-code-example"
+        }
+      },
+      "response": {
+        "status": 401,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "error": "invalid_access_code",
+          "message": "Wrong access code"
+        }
+      }
+    },
+    {
+      "title": "CORS preflight from an allowed origin",
+      "request": {
+        "method": "OPTIONS",
+        "path": "/api/purchases",
+        "headers": {
+          "origin": "http://localhost:5173",
+          "access-control-request-method": "POST",
+          "access-control-request-headers": "authorization, content-type"
+        }
+      },
+      "response": {
+        "status": 204,
+        "headers": {
+          "access-control-allow-origin": "http://localhost:5173",
+          "access-control-allow-methods": "GET, POST",
+          "access-control-allow-headers": "authorization, content-type",
+          "access-control-max-age": "600",
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "title": "CORS preflight from an origin not on the list",
+      "request": {
+        "method": "OPTIONS",
+        "path": "/api/purchases",
+        "headers": {
+          "origin": "https://not-allowed.example",
+          "access-control-request-method": "POST"
+        }
+      },
+      "response": {
+        "status": 403,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "error": "origin_not_allowed"
+        }
+      }
+    }
+  ]
+}

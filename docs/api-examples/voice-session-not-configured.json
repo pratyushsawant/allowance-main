@@ -1,0 +1,31 @@
+{
+  "_provenance": {
+    "capturedAt": "2026-11-20T12:16:06.673Z",
+    "source": "live",
+    "service": "https://allowance-backend-production.up.railway.app",
+    "note": "Captured from the deployed service. The capture used a backend credential; a frontend sends its agent SESSION token in the same header and gets the same response. ElevenLabs credentials are not set yet, so the live answer is 503."
+  },
+  "request": {
+    "method": "POST",
+    "path": "/api/voice/session",
+    "headers": {
+      "authorization": "Bearer <agent session token>",
+      "content-type": "application/json"
+    },
+    "body": {}
+  },
+  "response": {
+    "status": 503,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": "voice_not_configured",
+      "message": "Voice is not configured; set ELEVENLABS_API_KEY and ELEVENLABS_AGENT_ID in backend/.env",
+      "missing": [
+        "ELEVENLABS_API_KEY",
+        "ELEVENLABS_AGENT_ID"
+      ]
+    }
+  }
+}

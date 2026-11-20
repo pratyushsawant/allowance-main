@@ -1,0 +1,78 @@
+{
+  "_provenance": {
+    "capturedAt": "2026-11-20T12:16:06.673Z",
+    "source": "live",
+    "service": "https://allowance-backend-production.up.railway.app",
+    "note": "Captured from the deployed service. The capture used a backend credential; a frontend sends its agent SESSION token in the same header and gets the same response. Trimmed for size; real responses return up to 8 events with all contracts."
+  },
+  "request": {
+    "method": "GET",
+    "path": "/api/markets/search?q=vs",
+    "headers": {
+      "authorization": "Bearer <agent session token>"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "results": [
+        {
+          "ticker": "NCAAM-2611200400-KU-HOU-M",
+          "title": "Kansas vs Houston",
+          "category": "Sports",
+          "volume24h": "13872.31",
+          "expiryDate": "2026-11-22T04:00:00.000Z",
+          "lastSeenAt": 1795176925977,
+          "contracts": [
+            {
+              "instrumentSymbol": "GEMI-NCAAM-2611200400-KU-HOU-M-HOU",
+              "label": "Houston",
+              "bestBid": null,
+              "bestAsk": null,
+              "lastTradePrice": "0.97",
+              "observedAt": 1795176050966
+            },
+            {
+              "instrumentSymbol": "GEMI-NCAAM-2611200400-KU-HOU-M-KU",
+              "label": "Kansas",
+              "bestBid": null,
+              "bestAsk": "0.06",
+              "lastTradePrice": "0.18",
+              "observedAt": 1795176050966
+            }
+          ]
+        },
+        {
+          "ticker": "NCAAM-2611192200-AUB-ND-M",
+          "title": "Auburn vs Notre Dame",
+          "category": "Sports",
+          "volume24h": "12307.43",
+          "expiryDate": "2026-11-21T22:00:00.000Z",
+          "lastSeenAt": 1795176925977,
+          "contracts": [
+            {
+              "instrumentSymbol": "GEMI-NCAAM-2611192200-AUB-ND-M-AUB",
+              "label": "Auburn",
+              "bestBid": null,
+              "bestAsk": "0.05",
+              "lastTradePrice": "0.05",
+              "observedAt": 1795176050966
+            },
+            {
+              "instrumentSymbol": "GEMI-NCAAM-2611192200-AUB-ND-M-ND",
+              "label": "Notre Dame",
+              "bestBid": "0.85",
+              "bestAsk": null,
+              "lastTradePrice": "0.85",
+              "observedAt": 1795176444477
+            }
+          ]
+        }
+      ],
+      "_trimmed": "results: first 2 of 8"
+    }
+  }
+}
