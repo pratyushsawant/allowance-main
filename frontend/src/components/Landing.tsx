@@ -12,6 +12,10 @@ import { RulesFlow } from "../landing/RulesFlow";
 import { Mark } from "../landing/Mark";
 import { IntroHero } from "../landing/IntroHero";
 
+// The backend's default spending rules (backend config, catalog seller "Odds Desk"), shown in the rules
+// animation until the live rules load after login.
+const DEFAULT_RULES = { sellers: ["Odds Desk"], perRequestCap: 1, dailyBudget: 5, approvalThreshold: 0.25 };
+
 const SECTIONS = [
   { id: "how-it-works", label: "How it works" },
   { id: "rules", label: "Rules" },
@@ -214,20 +218,24 @@ export function RulesExplainer({
           </button>
         </div>
 
-        {rules ? (
-          <RulesFlow
-            sellers={rules.allowlist}
-            perRequestCap={rules.perRequestCap}
-            dailyBudget={rules.dailyBudget}
-            approvalThreshold={rules.approvalThreshold}
-            spentToday={spentToday}
-          />
-        ) : (
-          <div className="rounded-[22px] border border-line bg-surface p-7 text-[15px] text-ink-soft">
-            The live rules load after you connect: open the demo and enter the access code. Defaults on the backend: pay only allowlisted sellers,
-            at most 1.00 USDC per request and 5.00 USDC a day, and ask a person before anything over 0.25 USDC.
-          </div>
-        )}
+        <div>
+          {rules ? (
+            <RulesFlow
+              sellers={rules.allowlist}
+              perRequestCap={rules.perRequestCap}
+              dailyBudget={rules.dailyBudget}
+              approvalThreshold={rules.approvalThreshold}
+              spentToday={spentToday}
+            />
+          ) : (
+            <>
+              <RulesFlow {...DEFAULT_RULES} spentToday={0} />
+              <p className="mt-3 text-[13px] text-ink-soft">
+                Showing the backend defaults. Your live rules and today's spending load after you connect.
+              </p>
+            </>
+          )}
+        </div>
       </div>
     </section>
   );
