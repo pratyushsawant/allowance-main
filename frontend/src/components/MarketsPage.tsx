@@ -4,7 +4,7 @@
 // in src/index.css (pine = brand blue); green/red only for price up/down.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Bookmark, ExternalLink, FileText, Maximize2, MessageCircle, Mic, RefreshCw, Search, TrendingDown, TrendingUp, Wallet, X } from "lucide-react";
-import type { ChatMessage } from "../types";
+import type { ChatMessage, InputVia } from "../types";
 import { WATCHLIST, compact, formatPrice, pctChange, type AssetData, type AssetMeta, type Point } from "../markets";
 import { useMarketData } from "../marketsApi";
 import { VoicePanel } from "./VoicePanel";
@@ -38,7 +38,7 @@ export function MarketsPage({
   remainingLabel,
 }: {
   messages: ChatMessage[];
-  onSay: (text: string) => void;
+  onSay: (text: string, via?: InputVia) => void;
   busy?: boolean;
   onStop?: () => void;
   spentToday: number;

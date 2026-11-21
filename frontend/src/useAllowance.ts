@@ -1,7 +1,8 @@
 // All app state lives here. Components just read it and call the actions.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "./api";
-import type { ApprovalRequest, Budget, ChatMessage, Connection, Movement, Payment, Rules } from "./types";
+import type { ApprovalRequest, Budget, ChatMessage, Connection, InputVia, Movement, Payment, Rules } from "./types";
+import { speech, voice } from "./voice";
 
 export function useAllowance() {
   const [rules, setRules] = useState<Rules | null>(null);
@@ -43,14 +44,22 @@ export function useAllowance() {
         case "approval_resolved":
           setApproval((a) => (a?.id === e.id ? null : a));
           break;
-        case "agent_message":
-          setMessages((m) => [...m, { id: crypto.randomUUID(), from: "agent", text: e.text, status: "done", spoken: e.spoken, at: Date.now() }]);
+        case "agent_pending": {
+          const id = e.id;
+          setMessages((m) => (m.some((x) => x.id === id) ? m : [...m, { id, from: "agent", text: "", status: "thinking", at: Date.now() }]));
           break;
+        }
+        case "agent_message": {
+          const msg: ChatMessage = { id: e.id ?? crypto.randomUUID(), from: "agent", text: e.text, status: e.status ?? "done", spoken: e.spoken, at: Date.now() };
+          // With an id, it answers a placeholder (a spoken turn); replace it rather than add a second bubble.
+          setMessages((m) => (e.id && m.some((x) => x.id === e.id) ? m.map((x) => (x.id === e.id ? msg : x)) : [...m, msg]));
+          break;
+        }
         case "notice":
           setMessages((m) => [...m, { id: crypto.randomUUID(), from: "system", text: e.text, status: e.tone === "warn" ? "error" : "done", at: Date.now() }]);
           break;
         case "user_message":
-          setMessages((m) => [...m, { id: crypto.randomUUID(), from: "user", text: e.text, at: Date.now() }]);
+          setMessages((m) => [...m, { id: crypto.randomUUID(), from: "user", text: e.text, via: e.via, at: Date.now() }]);
           break;
         case "rules":
           setRules(e.rules);
@@ -80,13 +89,23 @@ export function useAllowance() {
 
   const connect = useCallback(() => api.connect(), []);
 
-  const say = useCallback(async (text: string) => {
+  // One message to the assistant. The input mode belongs to this turn: a typed message gets a text
+  // answer only (and silences speech left over from an earlier spoken turn); a message the browser
+  // heard (via "spoken") also gets its answer read aloud, unless spoken replies are muted or the person
+  // has moved on by then. ElevenLabs spoken turns don't come through here (see VoiceBridge).
+  const say = useCallback(async (text: string, via: InputVia = "typed") => {
+    const readAloud = via === "spoken" ? speech.beginSpokenTurn() : null;
+    if (via === "typed") {
+      speech.interrupt();
+      voice.controls()?.supersede();
+    }
     const id = crypto.randomUUID();
     pendingId.current = id;
     setBusy(true);
-    setMessages((m) => [...m, { id: crypto.randomUUID(), from: "user", text, at: Date.now() }, { id, from: "agent", text: "", status: "thinking", at: Date.now() }]);
+    setMessages((m) => [...m, { id: crypto.randomUUID(), from: "user", text, via, at: Date.now() }, { id, from: "agent", text: "", status: "thinking", at: Date.now() }]);
     const reply = await api.sendMessage(text);
     setMessages((m) => m.map((x) => (x.id === id ? { ...x, text: reply.text, status: reply.status, at: Date.now() } : x)));
+    if (readAloud !== null && reply.status !== "canceled") speech.speakReply(reply.text, readAloud);
     if (pendingId.current === id) {
       pendingId.current = null;
       setBusy(false);

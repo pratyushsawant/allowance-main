@@ -3,17 +3,18 @@
 // which decides what to say; the backend decides whether any purchase may happen.
 // Voice: the browser's own speech recognition (Chrome/Edge) and speech synthesis. If the backend
 // has ElevenLabs configured, the mic starts an ElevenLabs voice session instead (see VoiceBridge).
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { AlertTriangle, Hand, Info, Loader2, Mic, MicOff, Scissors, Sparkles, Square } from "lucide-react";
-import type { ChatMessage } from "../types";
-import { useVoice, voice } from "../voice";
+// Answers always appear as text. Only a spoken question gets a spoken answer, and "Mute spoken
+// replies" silences those too without touching the microphone.
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { AlertTriangle, Hand, Info, Loader2, Mic, MicOff, Scissors, Sparkles, Square, Volume2, VolumeX } from "lucide-react";
+import type { ChatMessage, InputVia } from "../types";
+import { speech, useVoice, voice } from "../voice";
 import { Mark } from "./Landing";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SpeechRecognition: any =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-const canSpeak = typeof window !== "undefined" && "speechSynthesis" in window;
 
 // Markets that exist on Gemini right now. The first is free; the others ask for paid data.
 const SUGGESTIONS = [
@@ -24,7 +25,6 @@ const SUGGESTIONS = [
 ];
 
 const clock = (t: number) => `Today at ${new Date(t).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
-const FINAL = new Set(["done", "approval", "incomplete", "error", "canceled", undefined]);
 
 export function VoicePanel({
   messages,
@@ -35,7 +35,7 @@ export function VoicePanel({
   headerRight,
 }: {
   messages: ChatMessage[];
-  onSay: (text: string) => void;
+  onSay: (text: string, via?: InputVia) => void;
   busy?: boolean;
   onStop?: () => void;
   title?: string;
@@ -52,18 +52,13 @@ export function VoicePanel({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  // Messages already read aloud (or present when the panel opened, so switching pages doesn't re-read them).
-  const spoken = useRef(new Set(messages.map((m) => m.id)));
   // ChatMessage has no timestamp, so remember when each one first appeared.
   const times = useRef(new Map<string, number>());
+  const lastActivity = useRef(0);
+  // Spoken replies can be heard from ElevenLabs, or from the browser's own voice.
+  const canMute = eleven || speech.supported();
 
-  // Read each finished answer aloud with the browser's voice, unless ElevenLabs already spoke it.
   useEffect(() => {
-    for (const m of messages) {
-      if (m.from !== "agent" || !FINAL.has(m.status) || !m.text || spoken.current.has(m.id)) continue;
-      spoken.current.add(m.id);
-      if (canSpeak && !m.spoken && !voice.connected()) speechSynthesis.speak(new SpeechSynthesisUtterance(m.text));
-    }
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
@@ -78,16 +73,36 @@ export function VoicePanel({
       recRef.current?.stop();
       return;
     }
+    // Push to talk: tapping the mic stops any reading at once, and nothing is read while the browser
+    // listens, so the recognizer can't hear the page's own voice. Only the final transcript is sent.
     const rec = new SpeechRecognition();
     rec.lang = "en-US";
     rec.interimResults = false;
+    rec.continuous = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rec.onresult = (e: any) => onSay(e.results[0][0].transcript);
-    rec.onend = () => setListening(false);
-    rec.onerror = () => setListening(false); // e.g. microphone permission denied
+    rec.onresult = (e: any) => {
+      const result = e.results[e.results.length - 1];
+      const text = result?.isFinal === false ? "" : String(result?.[0]?.transcript ?? "").trim();
+      if (text) onSay(text, "spoken");
+    };
+    const done = () => {
+      speech.setListening(false);
+      setListening(false);
+    };
+    rec.onend = done;
+    rec.onerror = done; // e.g. microphone permission denied
+    speech.setListening(true);
     rec.start();
     recRef.current = rec;
     setListening(true);
+  };
+
+  // Typing while the ElevenLabs agent is on: ask it to hold off speaking (at most once a second).
+  const onType = (value: string) => {
+    setTyped(value);
+    if (!voice.connected() || Date.now() - lastActivity.current < 1000) return;
+    lastActivity.current = Date.now();
+    voice.controls()?.userActivity();
   };
 
   const submit = () => {
@@ -132,7 +147,7 @@ export function VoicePanel({
           m.from === "system" ? (
             <Notice key={m.id} text={m.text} warn={m.status === "error"} time={clock(timeOf(m))} />
           ) : (
-          <Message key={m.id} from={m.from} time={clock(timeOf(m))} tone={m.status}>
+          <Message key={m.id} from={m.from} time={clock(timeOf(m))} tone={m.status} spoken={m.from === "user" && m.via === "spoken"}>
             {m.status === "thinking" || m.status === "fetching" ? (
               <span className="flex items-center gap-2 text-ink-soft">
                 <Loader2 size={16} className="animate-spin" />
@@ -182,7 +197,7 @@ export function VoicePanel({
           </div>
           <input
             value={typed}
-            onChange={(e) => setTyped(e.target.value)}
+            onChange={(e) => onType(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && submit()}
             placeholder={listening ? "Listening…" : "Ask anything about the markets…"}
             aria-label="Type a question"
@@ -205,6 +220,7 @@ export function VoicePanel({
             </button>
           )}
         </div>
+        {canMute && <MuteSwitch muted={v.muted} />}
         <p className="mt-3 text-[13px] leading-relaxed text-muted">
           {eleven && v.status === "connecting"
             ? "Connecting to the ElevenLabs voice agent…"
@@ -229,7 +245,46 @@ export function VoicePanel({
   );
 }
 
-function Message({ from, time, tone, children }: { from: "user" | "agent"; time: string; tone?: ChatMessage["status"]; children: ReactNode }) {
+// "Mute spoken replies": a local switch. Muting stops any speech at once; answers still appear as text
+// and the microphone keeps working. It never sends, repeats or cancels a message.
+function MuteSwitch({ muted }: { muted: boolean }) {
+  const id = useId();
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1">
+      <button
+        id={id}
+        type="button"
+        role="switch"
+        aria-checked={muted}
+        onClick={() => voice.setMuted(!muted)}
+        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine ${
+          muted ? "bg-ink" : "bg-line"
+        }`}
+      >
+        <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${muted ? "translate-x-[22px]" : "translate-x-0.5"}`} />
+      </button>
+      <label htmlFor={id} className="flex cursor-pointer items-center gap-1.5 text-[14px] font-medium text-ink">
+        {muted ? <VolumeX size={16} className="text-ink-soft" aria-hidden="true" /> : <Volume2 size={16} className="text-pine" aria-hidden="true" />}
+        Mute spoken replies
+      </label>
+      <span className="text-[13px] text-muted">{muted ? "Answers show as text only. The mic still works." : "Spoken questions get spoken answers."}</span>
+    </div>
+  );
+}
+
+function Message({
+  from,
+  time,
+  tone,
+  spoken = false,
+  children,
+}: {
+  from: "user" | "agent";
+  time: string;
+  tone?: ChatMessage["status"];
+  spoken?: boolean;
+  children: ReactNode;
+}) {
   return (
     <div className="msg-in flex items-end gap-3">
       {from === "agent" ? (
@@ -243,6 +298,11 @@ function Message({ from, time, tone, children }: { from: "user" | "agent"; time:
         <div className="mb-1.5 flex items-center gap-1.5 text-sm text-muted">
           <span>{from === "agent" ? "Allowance" : "You"}</span>
           {from === "agent" && <span className="rounded bg-paper px-1.5 text-[11px] font-semibold text-ink-soft">AI</span>}
+          {spoken && (
+            <span className="flex items-center gap-0.5 rounded bg-paper px-1.5 text-[11px] font-semibold text-ink-soft">
+              <Mic size={11} aria-hidden="true" /> Spoken
+            </span>
+          )}
           <span aria-hidden="true">•</span>
           <span>{time}</span>
         </div>

@@ -27,6 +27,7 @@ import type { Api, Listener } from "./api";
 import { EXPLORER_TX_URL } from "./config";
 import type { AgentReply, Budget, ChatMessage, ChatStatus, Connection, MarketData, Movement, Payment, PaymentStatus, Rules, ServerEvent } from "./types";
 import { voice } from "./voice";
+import type { VoiceReply } from "./voiceTurns";
 
 const listeners = new Set<Listener>();
 export const emit = (e: ServerEvent) => listeners.forEach((l) => l(e));
@@ -215,19 +216,21 @@ function errorReply(err: unknown): AgentReply {
 }
 
 /**
- * The ElevenLabs voice agent's single tool: the person's spoken request goes to the same server-side
+ * One spoken turn (see voiceTurns.ts): the person's finalized transcript goes to the same server-side
  * Claude conversation as the chat panel, so spoken purchases pass the same purchase gate, policy and
- * approvals as typed ones. Returns the text for the voice agent to say.
+ * approvals as typed ones. `messageId` is fixed per turn, so a repeat returns the stored answer instead
+ * of running the turn (or a purchase in it) again. Never aborted: a purchase already submitted stands.
  */
-export async function askFromVoice(text: string): Promise<string> {
+export async function askFromVoice(text: string, messageId: string): Promise<VoiceReply> {
   const request = text.trim();
-  if (!request) return "I didn't catch that. Could you say it again?";
+  if (!request) return { text: "I didn't catch that. Could you say it again?", status: "done" };
+  const forConversation = conversationId;
   try {
-    const r = await backend.chat(conversationId, crypto.randomUUID(), request);
+    const r = await backend.chat(forConversation, messageId, request);
     remember(r);
-    return r.reply;
+    return { ...toReply(r), current: forConversation === conversationId };
   } catch (err) {
-    return errorReply(err).text;
+    return { ...errorReply(err), current: forConversation === conversationId };
   } finally {
     refreshNow();
   }

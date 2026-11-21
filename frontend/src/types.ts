@@ -98,14 +98,19 @@ export type ApprovalRequest = {
  */
 export type ChatStatus = "thinking" | "fetching" | "done" | "approval" | "incomplete" | "error" | "canceled";
 
+/** How the person sent a message. Only a spoken message gets a spoken reply. */
+export type InputVia = "typed" | "spoken";
+
 export type ChatMessage = {
   id: string;
   /** "system": an app notice (freeze changed, onchain transfer seen), not written by the AI. */
   from: "user" | "agent" | "system";
   text: string;
   status?: ChatStatus;
-  /** Spoken already (ElevenLabs speaks its own replies), so the browser shouldn't read it aloud. */
+  /** Said aloud by the ElevenLabs voice agent (agent messages). */
   spoken?: boolean;
+  /** How the person sent it (user messages). */
+  via?: InputVia;
   /** When it was said (ms), when known. */
   at?: number;
 };
@@ -118,9 +123,11 @@ export type ServerEvent =
   | { type: "payment"; payment: Payment } // new payment OR status update (same id)
   | { type: "approval_request"; request: ApprovalRequest }
   | { type: "approval_resolved"; id: string }
-  | { type: "agent_message"; text: string; spoken?: boolean }
+  // With an id: replaces the placeholder from agent_pending (a spoken turn's answer).
+  | { type: "agent_message"; text: string; spoken?: boolean; id?: string; status?: AgentReply["status"] }
+  | { type: "agent_pending"; id: string } // a spoken turn was sent to the assistant
   | { type: "notice"; text: string; tone?: "info" | "warn" }
-  | { type: "user_message"; text: string } // e.g. an ElevenLabs voice transcript
+  | { type: "user_message"; text: string; via?: InputVia } // e.g. an ElevenLabs voice transcript
   | { type: "rules"; rules: Rules }
   | { type: "budget"; budget: Budget }
   | { type: "movements"; movements: Movement[] }
