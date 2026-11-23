@@ -22,10 +22,28 @@ export type Handler = (ctx: Ctx) => Promise<void> | void;
 
 const replacer = (_k: string, v: unknown) => (typeof v === "bigint" ? v.toString() : v);
 
+/** Sent with every JSON response: the API serves data only, never pages, so nothing may frame, sniff or render it. */
+export const SECURITY_HEADERS: Readonly<Record<string, string>> = {
+  "x-content-type-options": "nosniff",
+  "x-frame-options": "DENY",
+  "content-security-policy": "default-src 'none'; frame-ancestors 'none'",
+  "strict-transport-security": "max-age=31536000; includeSubDomains",
+  "referrer-policy": "no-referrer",
+};
+
 export function sendJson(res: ServerResponse, status: number, body: unknown, headers: Record<string, string> = {}): void {
   if (res.headersSent) return;
-  res.writeHead(status, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...headers });
+  res.writeHead(status, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...SECURITY_HEADERS, ...headers });
   res.end(JSON.stringify(body, replacer));
+}
+
+/**
+ * A `?limit=` value as a whole number from 1 to `max`. Junk and 0 give `fallback`; negatives and
+ * decimals are clamped and truncated (SQLite rejects a non-integer LIMIT, which was a 500).
+ */
+export function parseLimit(value: string | null, fallback: number, max: number): number {
+  const n = Number(value ?? fallback) || fallback;
+  return Math.min(max, Math.max(1, Math.trunc(n)));
 }
 
 export async function readJson(req: IncomingMessage, maxBytes = 16_384): Promise<Record<string, unknown>> {

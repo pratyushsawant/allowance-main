@@ -18,7 +18,7 @@ import type { IncomingMessage } from "node:http";
 import { gunzipSync } from "node:zlib";
 import type { Auth } from "./auth.ts";
 import type { DB } from "./db.ts";
-import { HttpError, sendJson, type Router } from "./http.ts";
+import { HttpError, parseLimit, sendJson, type Router } from "./http.ts";
 import type { Ledger } from "./ledger.ts";
 import { formatBaseUnits, rescaleExact } from "./units.ts";
 
@@ -310,7 +310,7 @@ export function registerStreamsWebhook(router: Router, o: StreamsOptions): void 
 
   router.add("GET", "/api/chain/movements", ({ req, res, url }) => {
     o.auth.require(req, "agent");
-    const limit = Math.min(100, Math.max(1, Number(url.searchParams.get("limit") ?? 20) || 20));
+    const limit = parseLimit(url.searchParams.get("limit"), 20, 100);
     const rows = recent.all(limit) as Array<Record<string, string | number | null>>;
     sendJson(res, 200, {
       movements: rows.map((r) => ({

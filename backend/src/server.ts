@@ -57,6 +57,8 @@ const sessionTtlSeconds = {
   operator: Number(optionalEnv("OPERATOR_SESSION_TTL_SECONDS", "3600")),
 };
 const corsOrigins = parseOrigins(optionalEnv("CORS_ALLOWED_ORIGINS", ""));
+// Railway's edge overwrites X-Real-IP with the client's address; elsewhere, trust no header.
+const clientIpHeader = optionalEnv("CLIENT_IP_HEADER", process.env.RAILWAY_ENVIRONMENT ? "x-real-ip" : "") || undefined;
 const voice = createVoiceSessions({
   apiKey: process.env.ELEVENLABS_API_KEY?.trim() || undefined,
   agentId: process.env.ELEVENLABS_AGENT_ID?.trim() || undefined,
@@ -131,7 +133,7 @@ const assistant = createAssistant({
 
 registerApi(router, {
   ledger, buyer, market, policy, publicBaseUrl, gatewayAvailable, voice, sessions, accessCodes, sessionTtlSeconds, auth,
-  sellerAddresses: payTo, assistant,
+  sellerAddresses: payTo, assistant, clientIpHeader,
 });
 registerStreamsWebhook(router, {
   db, ledger, auth, securityToken: qnToken, log, explorerTx,
@@ -150,6 +152,7 @@ server.listen(port, host, () => {
   log(`[server] recorder ${recorder ? "on" : "off (RECORDER_ENABLED=0)"}; reconciler every 30 s`);
   log(`[server] sessions: agent login ${accessCodes.agent ? "on" : "off (no DEMO_ACCESS_CODE)"}, operator login ${accessCodes.operator ? "on" : "off (no OPERATOR_ACCESS_CODE)"}`);
   log(`[server] voice: ${voice.configured ? "configured" : "not configured (set ELEVENLABS_API_KEY and ELEVENLABS_AGENT_ID)"}; CORS origins: ${corsOrigins.join(", ") || "none"}`);
+  log(`[server] rate limits per client by ${clientIpHeader ? `the ${clientIpHeader} header` : "socket address"}`);
   log(`[server] assistant: ${modelClient ? `configured (model ${anthropicModel})` : "not configured (set ANTHROPIC_API_KEY)"}`);
   log(`[server] streams webhook: ${qnToken ? "POST /webhooks/quicknode (HMAC verified)" : "off (set QN_STREAM_SECURITY_TOKEN)"}; watching ${gateway.address}`);
 });

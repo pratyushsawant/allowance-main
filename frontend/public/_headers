@@ -1,0 +1,19 @@
+# Netlify response headers for every page and asset (copied into dist/ by Vite).
+#
+# The Content-Security-Policy is enforced. If a voice call ever breaks, check the browser console for
+# "Content Security Policy" errors and add the blocked host below. What each source is for:
+#   script-src blob:            ElevenLabs audio worklets are loaded from blob: URLs
+#   script-src cdn.jsdelivr.net, 'wasm-unsafe-eval'
+#                               ElevenLabs' resampler (libsamplerate-js, WebAssembly) on browsers that
+#                               can't open the microphone at the agent's sample rate
+#   connect-src *.elevenlabs.io the voice session (api.elevenlabs.io, livekit.rtc.elevenlabs.io)
+#   connect-src railway.app     the Allowance backend
+#   connect-src polymarket, coingecko
+#                               the Markets page (Yahoo goes through the same-origin /api/yahoo proxy)
+#   style-src, font-src         Google Fonts; 'unsafe-inline' for style attributes
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: microphone=(self), camera=(), geolocation=(), payment=(), usb=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' blob: https://cdn.jsdelivr.net 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob: data:; connect-src 'self' https://allowance-backend-production.up.railway.app https://*.elevenlabs.io wss://*.elevenlabs.io https://gamma-api.polymarket.com https://api.coingecko.com https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
