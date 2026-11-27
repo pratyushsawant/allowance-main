@@ -32,6 +32,13 @@ export const ARC_TESTNET = {
   explorerUrl: arc.chain.blockExplorers?.default.url ?? "",
 };
 
+/**
+ * Arc Testnet RPC (docs.arc.io/arc/references/rpc-endpoints, "Primary (Circle)"). The SDK's built-in
+ * default, rpc.testnet.arc.network, stopped resolving in Nov 2026, which broke every balance read.
+ * ARC_RPC_URL overrides it.
+ */
+export const ARC_TESTNET_RPC_URL = "https://rpc.testnet.arc.io";
+
 /** Circle Gateway API for testnets (from Circle's nanopayments quickstarts). */
 export const GATEWAY_API_URL_TESTNET = "https://gateway-api-testnet.circle.com";
 const GATEWAY_API_HOST_MAINNET = "gateway-api.circle.com";

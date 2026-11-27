@@ -258,7 +258,9 @@ export function registerApi(router: Router, deps: ApiDeps): void {
 
   router.add("GET", "/api/budget", async ({ req, res }) => {
     auth.require(req, "agent");
-    const b = deps.ledger.budget(await deps.gatewayAvailable());
+    // The limits and today's spending come from the ledger. Only the wallet balance needs the chain,
+    // so an RPC outage shows the balance as unknown (null) instead of failing the whole request.
+    const b = deps.ledger.budget(await deps.gatewayAvailable().catch(() => undefined));
     sendJson(res, 200, {
       ...b,
       dailyCapUsdc: usdc(b.dailyCap),

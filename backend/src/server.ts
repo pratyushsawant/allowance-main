@@ -19,10 +19,11 @@ import { createVoiceSessions } from "./voice.ts";
 import { registerStreamsWebhook } from "./streams.ts";
 import { createBuyer } from "./buyer.ts";
 import {
-  ARC_TESTNET, GATEWAY_AUTH_VALIDITY_WINDOW_SECONDS, addressFromEnv, explorerTx, gatewayApiUrl, optionalEnv,
+  ARC_TESTNET, ARC_TESTNET_RPC_URL, GATEWAY_AUTH_VALIDITY_WINDOW_SECONDS, addressFromEnv, explorerTx, gatewayApiUrl, optionalEnv,
   policyConfigFromEnv, privateKeyFromEnv, tokenFromEnv,
 } from "./config.ts";
-import { openDatabase } from "./db.ts";
+import { DEFAULT_DB_PATH, openDatabase } from "./db.ts";
+import { compactIfDiskLow, startRetention } from "./retention.ts";
 import { createRouter } from "./http.ts";
 import { createLedger } from "./ledger.ts";
 import { createMarketData } from "./market-data.ts";
@@ -67,9 +68,13 @@ const voice = createVoiceSessions({
 const version = optionalEnv("AUTH_VERSION", "2");
 const policy = policyConfigFromEnv();
 
-const db = openDatabase();
-const rpcUrl = optionalEnv("ARC_RPC_URL", "");
-const gateway = new GatewayClient({ chain: ARC_TESTNET.chainName, privateKey: buyerKey, ...(rpcUrl ? { rpcUrl } : {}) });
+// Recorded odds are kept for ODDS_RETENTION_HOURS (default 48), so the database stays inside its volume.
+const retentionHours = Number(optionalEnv("ODDS_RETENTION_HOURS", "48"));
+if (!(retentionHours >= 1)) throw new Error("ODDS_RETENTION_HOURS must be a number of hours, at least 1");
+const retentionMs = retentionHours * 60 * 60_000;
+const db = openDatabase(compactIfDiskLow(process.env.DB_PATH?.trim() || DEFAULT_DB_PATH, { retentionMs, log }).path);
+const rpcUrl = optionalEnv("ARC_RPC_URL", ARC_TESTNET_RPC_URL);
+const gateway = new GatewayClient({ chain: ARC_TESTNET.chainName, privateKey: buyerKey, rpcUrl });
 const facilitator = new BatchFacilitatorClient({ url: gatewayApiUrl() });
 const { minValiditySeconds } = await checkLiveGateway(facilitator, version);
 
@@ -158,12 +163,14 @@ server.listen(port, host, () => {
 });
 reconciler.start();
 recorder?.start();
+const retention = startRetention(db, { retentionMs, log });
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.on(signal, () => {
     log(`[server] ${signal}: shutting down`);
     recorder?.stop();
     reconciler.stop();
+    retention.stop();
     server.close(() => {
       db.close();
       process.exit(0);

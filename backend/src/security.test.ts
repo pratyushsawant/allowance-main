@@ -176,6 +176,16 @@ test("parseLimit: whole numbers from 1 to max, with the old fallbacks", () => {
   assert.equal(parseLimit("50", 20, 100), 50);
 });
 
+test("an Arc RPC outage doesn't break /api/budget: limits and spending still load, the balance shows as unknown", async () => {
+  // What production logged on 2026-11-26 when the SDK's default RPC host stopped resolving.
+  const { call } = await start({ gatewayAvailable: async () => { throw new Error("ContractFunctionExecutionError: HTTP request failed."); } });
+  const r = await call("GET", "/api/budget", { token: AGENT_TOKEN });
+  assert.equal(r.status, 200);
+  assert.equal(r.json.dailyCapUsdc, "5");
+  assert.equal(r.json.remainingTodayUsdc, "5");
+  assert.equal(r.json.availableFundsUsdc, null, "balance unknown, not a 500");
+});
+
 test("every JSON response carries security headers (200, 401 and 404 responses)", async () => {
   const { call } = await start();
   for (const [method, path] of [["GET", "/health"], ["GET", "/api/budget"], ["GET", "/no/such/route"]] as const) {

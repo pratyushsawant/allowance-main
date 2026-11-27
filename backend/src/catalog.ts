@@ -27,7 +27,7 @@ export const CATALOG: readonly CatalogItem[] = [
   },
   {
     id: "odds_history", sellerId: "odds-desk", priceUsdc: "0.02",
-    title: "Odds history and biggest movers", description: "Recorded prices since recording began, and the largest moves.",
+    title: "Odds history and biggest movers", description: "Recorded prices from the last 48 hours, and the largest moves.",
     path: (t) => `/sellers/odds-desk/history/${encodeURIComponent(t)}`,
   },
   {

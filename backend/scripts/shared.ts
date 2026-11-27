@@ -1,14 +1,14 @@
 /** Shared setup for the smoke-test scripts. */
 import { GatewayClient } from "@circle-fin/x402-batching/client";
 import { erc20Abi, type Address } from "viem";
-import { ARC_TESTNET, optionalEnv, privateKeyFromEnv } from "../src/config.ts";
+import { ARC_TESTNET, ARC_TESTNET_RPC_URL, optionalEnv, privateKeyFromEnv } from "../src/config.ts";
 
 export function buyerClient(): GatewayClient {
-  const rpcUrl = optionalEnv("ARC_RPC_URL", "");
+  const rpcUrl = optionalEnv("ARC_RPC_URL", ARC_TESTNET_RPC_URL);
   return new GatewayClient({
     chain: ARC_TESTNET.chainName,
     privateKey: privateKeyFromEnv("BUYER_PRIVATE_KEY"),
-    ...(rpcUrl ? { rpcUrl } : {}),
+    rpcUrl,
   });
 }
 
